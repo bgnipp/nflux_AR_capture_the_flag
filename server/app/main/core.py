@@ -63,9 +63,12 @@ def handle_message(user_name, is_offense, udid, latitude, longitude):
 	rejoining_game_id = is_rejoining_game(udid)
 	if rejoining_game_id:
 		join_room(rejoining_game_id)
-		print('rejoining game')
-		current_timer_count = int(5 + games[game_id]['config']['game_length'] - (time.time() - games[game_id]['start_time']))
-		return 'rejoining', rejoining_game_id, games[game_id]['config'], games[game_id]['players_pos'], current_timer_count
+		current_timer_count = int(5 + games[rejoining_game_id]['config']['game_length'] \
+			- (time.time() - games[rejoining_game_id]['start_time']))
+		print('REJOINING GAME, game_id: ', rejoining_game_id, ' current timer count: ', current_timer_count)
+		print("THE REST: \n", games[rejoining_game_id]['config'], games[rejoining_game_id]['players_pos'], current_timer_count)
+		return 'rejoining', rejoining_game_id, games[rejoining_game_id]['config'], \
+			games[rejoining_game_id]['players_pos'], current_timer_count
 	game_id = register_user(user_name, is_offense, udid, request.sid, latitude, longitude)
 	join_room(game_id)
 	return 'not_rejoining', game_id
@@ -266,12 +269,12 @@ def handle_message(
 	):
 	position = str(position)
 	game_id = str(game_id)
-	print("GAMES! game id ", games[game_id])
+	#print("GAMES! game id ", games[game_id])
 	games[game_id]['players_pos'][position]['status'] = status
 	games[game_id]['players_pos'][position]['latitude'] = latitude
 	games[game_id]['players_pos'][position]['longitude'] = longitude
 	games[game_id]['heartbeat'] = time.time()
-	print("returning ", games[game_id]['players_pos'], " ", games[game_id]['point_state'])
+	#print("returning ", games[game_id]['players_pos'], " ", games[game_id]['point_state'])
 	return games[game_id]['players_pos'], games[game_id]['point_state']
 
 @socketio.on('postGameEvent')

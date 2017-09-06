@@ -122,7 +122,6 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
 
     @IBAction func quitGamebutton(_ sender: AnyObject) {
         quittingGame = true
-        
         self.menuRefreshTimer.invalidate()
         self.dismiss(animated: true, completion: nil)
     }

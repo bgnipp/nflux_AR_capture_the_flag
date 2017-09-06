@@ -622,22 +622,18 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         else if globalTestModeEnabled == true && testViewHidden == true {
             self.hideTestView(true)
         }
-        
         if initialMapSetup2 == false {
             self.initialMapSetup2 = true
             self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 400, pitch: 25, heading: 45)
             self.mapView.setCamera(self.mapCamera, animated: false)
         }
-        
         if quittingGame == true {
             self.quitGame()
         }
         quittingGame = false
-        
         if gameWinner != "" {
             endGame()
         }
-        
         SocketIOManager.sharedInstance.listenForGameEvents(completionHandler: { (gameEvent) -> Void in
             self.processGameEvent(gameEvent: gameEvent)
         })
@@ -1085,7 +1081,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             self.ownJammerCount = 1
             self.addActiveItemImageView(7)
             self.logEvent("\(jammerSenderNickname) used a jammer")
-        } else {
+        } else if jammerSender != localPlayerPosition {
         //get inflicted with jammer
             self.jammerCount = 1
         }
@@ -2431,6 +2427,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             self.endGame()
         }))
         refreshAlert.addAction(UIAlertAction(title: "No", style: .default, handler: { (action: UIAlertAction!) in
+            quittingGame = false
         }))
         present(refreshAlert, animated: true, completion: nil)
     }
@@ -3208,85 +3205,85 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     func genItem() {
         let roll = Int(arc4random_uniform(55) + 1)
         if roll >= 1 && roll <= 8 {
-            if itemsDisabled[0] as! Bool == false {
+            if itemsDisabled[0] == false {
                 placeItem(1) }
             else { genItem() }
         }
         if roll >= 7 && roll <= 10  {
-            if itemsDisabled[1] as! Bool == false {
+            if itemsDisabled[1] == false {
                 placeItem(2) }
             else { genItem() }
         }
         if roll >= 11 && roll <= 14  {
-            if itemsDisabled[2] as! Bool == false {
+            if itemsDisabled[2] == false {
                 placeItem(3) }
             else { genItem() }
         }
         if roll >= 15 && roll <= 16 {
-            if itemsDisabled[3] as! Bool == false {
+            if itemsDisabled[3] == false {
                 placeItem(4) }
             else { genItem() }
         }
         if roll >= 17 && roll <= 20 {
-            if itemsDisabled[4] as! Bool == false {
+            if itemsDisabled[4] == false {
                 placeItem(5) }
             else { genItem() }
         }
         if roll >= 21 && roll <= 22 {
-            if itemsDisabled[5] as! Bool == false {
+            if itemsDisabled[5] == false {
                 placeItem(6) }
             else { genItem() }
         }
         if roll >= 23 && roll <= 25 {
-            if itemsDisabled[6] as! Bool == false {
+            if itemsDisabled[6] == false {
                 placeItem(7) }
             else { genItem() }
         }
         if roll >= 26 && roll <= 29 {
-            if itemsDisabled[7] as! Bool == false {
+            if itemsDisabled[7] == false {
                 placeItem(8) }
             else { genItem() }
         }
         if globalIsOffense == true {
             if roll >= 30 && roll <= 33 {
-                if itemsDisabled[8] as! Bool == false {
+                if itemsDisabled[8] == false {
                     placeItem(9) }
                 else { genItem() }
             }
             if roll >= 34 && roll <= 35 {
-                if itemsDisabled[9] as! Bool == false {
+                if itemsDisabled[9] == false {
                     placeItem(10) }
                 else { genItem() }
             }
             if roll >= 36 && roll <= 38 {
-                if itemsDisabled[10] as! Bool == false {
+                if itemsDisabled[10] == false {
                     placeItem(11) }
                 else { genItem() }
             }
             if roll == 39 {
-                if itemsDisabled[11] as! Bool == false {
+                if itemsDisabled[11] == false {
                     placeItem(12) }
                 else { genItem() }
             }
         }
         if globalIsOffense == false {
             if roll >= 30 && roll <= 32 {
-                if itemsDisabled[12] as! Bool == false {
+                if itemsDisabled[12] == false {
                     placeItem(13) }
                 else { genItem() }
             }
             if roll >= 33 && roll <= 35 {
-                if itemsDisabled[13] as! Bool == false {
+                if itemsDisabled[13] == false {
                     placeItem(14) }
                 else { genItem() }
             }
             if roll >= 36 && roll <= 37 {
-                if itemsDisabled[14] as! Bool == false {
+                if itemsDisabled[14] == false {
                     placeItem(15) }
                 else { genItem() }
             }
             if roll == 38 {
-                if itemsDisabled[15] as! Bool == false {
+                if itemsDisabled[15] == false {
                     placeItem(16) }
                 else { genItem() }
             }
@@ -3933,8 +3930,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.activeItemImageView.image = UIImage(named:"fist.png")
                 self.activeItemImageView.isHidden = false
             }
-        }
-        else if activeItemImageView2.isHidden == true {
+        } else if activeItemImageView2.isHidden == true {
             if item == 7 {
                 self.activeItemImageView2.image = UIImage(named:"jammer.png")
                 self.activeItemImageView2.isHidden = false
@@ -3951,8 +3947,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.activeItemImageView2.image = UIImage(named:"fist.png")
                 self.activeItemImageView2.isHidden = false
             }
-        }
-        else if activeItemImageView3.isHidden == true {
+        } else if activeItemImageView3.isHidden == true {
             if item == 7 {
                 self.activeItemImageView3.image = UIImage(named:"jammer.png")
                 self.activeItemImageView3.isHidden = false
@@ -5102,7 +5097,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         self.locationManager.allowsBackgroundLocationUpdates = false
         self.locationManager.stopRangingBeacons(in: self.detectionRegion)
         self.locationManager.stopUpdatingLocation()
-        self.performSegue(withIdentifier: "showGameResultsViewController", sender: nil)
+        if quittingGame {
+            self.performSegue(withIdentifier: "showFirstViewControllerFromGameViewController", sender: nil)
+        } else {
+            self.performSegue(withIdentifier: "showGameResultsViewController", sender: nil)
+        }
         sleep(1)
     }
 }
