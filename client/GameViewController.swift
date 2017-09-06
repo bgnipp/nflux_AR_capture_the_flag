@@ -400,22 +400,22 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var spybot1Count = 0
     var spybot1Circle = MKCircle()
     var spybot1Coordinates = CLLocationCoordinate2D()
-    var spybot1DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "Spybot")
-    var spybot1Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), radius: CLLocationDistance(1), identifier: "")
+    var spybot1DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), title: "Spybot")
+    var spybot1Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), radius: CLLocationDistance(1), identifier: "")
     var spybot1Dropped = false
     
     var spybot2Count = 0
     var spybot2Circle = MKCircle()
     var spybot2Coordinates = CLLocationCoordinate2D()
-    var spybot2DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "Spybot")
-    var spybot2Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), radius: CLLocationDistance(1), identifier: "")
+    var spybot2DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), title: "Spybot")
+    var spybot2Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), radius: CLLocationDistance(1), identifier: "")
     var spybot2Dropped = false
     
     var spybot3Count = 0
     var spybot3Circle = MKCircle()
     var spybot3Coordinates = CLLocationCoordinate2D()
-    var spybot3DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "Spybot")
-    var spybot3Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), radius: CLLocationDistance(1), identifier: "")
+    var spybot3DropPin = CustomPinSpybot(coordinate: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), title: "Spybot")
+    var spybot3Region = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 1.0, longitude: 1.0), radius: CLLocationDistance(1), identifier: "")
     var spybot3Dropped = false
     
     var firstSpybotDropped = 0
@@ -1061,12 +1061,13 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let bomber = gameEvent["sender"] as! String
         let bomberNickname = globalPlayerNamesDict[bomber]!
         let bombRecipient = gameEvent["recipient"] as! String
+        let bombRecipientNickname = globalPlayerNamesDict[bombRecipient]!
         if localPlayerPosition == bombRecipient {
             self.tagLocalPlayer(tagger: bomberNickname, method: "bomb")
         } else if bomber != localPlayerPosition {
             self.bombtag?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-            self.logEvent("\(bomber) bombed \(bombRecipient)!")
+            self.logEvent("\(bomber) bombed \(bombRecipientNickname)!")
         }
     }
     
@@ -1187,7 +1188,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             self.tagLocalPlayer(tagger: lightningerNickname, method: "lightning")
         } else if lightninger != localPlayerPosition {
             self.logEvent("\(lightningerNickname) used lightning!")
-            self.lightningtag?.play()
+            self.lightning?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
         }
     }
@@ -1315,7 +1316,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         switch eventName {
             case "mine_plant": processMinePlantEvent(gameEvent: gameEvent)
             case "mine_tag": processMineTagEvent(gameEvent: gameEvent)
-            case "supermine": processMinePlantEvent(gameEvent: gameEvent)
+            case "supermine_plant": processMinePlantEvent(gameEvent: gameEvent)
             case "bomb": processBombEvent(gameEvent: gameEvent)
             case "jammer": processJammerEvent(gameEvent: gameEvent)
             case "spybot": processSpybotEvent(gameEvent: gameEvent)
@@ -2555,11 +2556,8 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense5DropPin)
                     }
                 }
-                
-            }
-            
             //if player is defense, show all offense players in scan region
-            if globalIsOffense != true {
+            } else {
                 if region.contains(offense1Coordinates) {
                     self.mapView.removeAnnotation(self.offense1DropPin)
                     self.mapView.removeAnnotation(self.offense1XDropPin)
@@ -2676,7 +2674,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         if self.jammerCount == 0 {
             //if player is offense, show all defense players
             if globalIsOffense == true {
-                if self.defense1Lat != 0 {
+                if playerStateDict["defense1"] != nil {
                     self.mapView.removeAnnotation(self.defense1DropPin)
                     self.mapView.removeAnnotation(self.defense1XDropPin)
                     if playerStateDict["defense1"]!["status"] as! Int == 0 {
@@ -2686,7 +2684,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense1DropPin)
                     }
                 }
-                if self.defense2Lat != 0 {
+                if playerStateDict["defense2"] != nil {
                     self.mapView.removeAnnotation(self.defense2DropPin)
                     self.mapView.removeAnnotation(self.defense2XDropPin)
                     if playerStateDict["defense2"]!["status"] as! Int == 0 {
@@ -2696,7 +2694,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense2DropPin)
                     }
                 }
-                if self.defense3Lat != 0 {
+                if playerStateDict["defense3"] != nil {
                     self.mapView.removeAnnotation(self.defense3DropPin)
                     self.mapView.removeAnnotation(self.defense3XDropPin)
                     if playerStateDict["defense3"]!["status"] as! Int == 0 {
@@ -2706,7 +2704,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense3DropPin)
                     }
                 }
-                if self.defense4Lat != 0 {
+                if playerStateDict["defense4"] != nil {
                     self.mapView.removeAnnotation(self.defense4DropPin)
                     self.mapView.removeAnnotation(self.defense4XDropPin)
                     if playerStateDict["defense4"]!["status"] as! Int == 0 {
@@ -2716,7 +2714,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense4DropPin)
                     }
                 }
-                if self.defense5Lat != 0 {
+                if playerStateDict["defense5"] != nil {
                     self.mapView.removeAnnotation(self.defense5DropPin)
                     self.mapView.removeAnnotation(self.defense5XDropPin)
                     if playerStateDict["defense5"]!["status"] as! Int == 0 {
@@ -2726,16 +2724,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.defense5DropPin)
                     }
                 }
-            }
-            
-            //if player is defense, show all offense players
-            if globalIsOffense != true {
-                
-                if self.offense1Lat != 0 {
+            } else {
+                if playerStateDict["offense1"] != nil {
                     self.mapView.removeAnnotation(self.offense1DropPin)
                     self.mapView.removeAnnotation(self.offense1XDropPin)
                     self.mapView.removeAnnotation(self.offense1flagDropPin)
-                    
                     if playerCapturingPoint == "offense1" {
                         self.mapView.addAnnotation(self.offense1flagDropPin)
                     }
@@ -2746,11 +2739,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.offense1DropPin)
                     }
                 }
-                if self.offense2Lat != 0 {
+                if playerStateDict["offense2"] != nil {
                     self.mapView.removeAnnotation(self.offense2DropPin)
                     self.mapView.removeAnnotation(self.offense2XDropPin)
                     self.mapView.removeAnnotation(self.offense2flagDropPin)
-                    
                     if playerCapturingPoint == "offense2" {
                         self.mapView.addAnnotation(self.offense2flagDropPin)
                     }
@@ -2761,11 +2753,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.offense2DropPin)
                     }
                 }
-                if self.offense3Lat != 0 {
+                if playerStateDict["offense3"] != nil {
                     self.mapView.removeAnnotation(self.offense3DropPin)
                     self.mapView.removeAnnotation(self.offense3XDropPin)
                     self.mapView.removeAnnotation(self.offense3flagDropPin)
-                    
                     if playerCapturingPoint == "offense3" {
                         self.mapView.addAnnotation(self.offense3flagDropPin)
                     }
@@ -2776,11 +2767,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.offense3DropPin)
                     }
                 }
-                if self.offense4Lat != 0 {
+                if playerStateDict["offense4"] != nil {
                     self.mapView.removeAnnotation(self.offense4DropPin)
                     self.mapView.removeAnnotation(self.offense4XDropPin)
                     self.mapView.removeAnnotation(self.offense4flagDropPin)
-                    
                     if playerCapturingPoint == "offense4" {
                         self.mapView.addAnnotation(self.offense4flagDropPin)
                     }
@@ -2791,11 +2781,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.mapView.addAnnotation(self.offense4DropPin)
                     }
                 }
-                if self.offense5Lat != 0 {
+                if playerStateDict["offense5"] != nil {
                     self.mapView.removeAnnotation(self.offense5DropPin)
                     self.mapView.removeAnnotation(self.offense5XDropPin)
                     self.mapView.removeAnnotation(self.offense5flagDropPin)
-                    
                     if playerCapturingPoint == "offense5" {
                         self.mapView.addAnnotation(self.offense5flagDropPin)
                     }
@@ -4673,7 +4662,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func defenseStateUpdate() {
-
         //update teammates' locations on map, and statuses
         if playerStateDict["defense1"] != nil  && localPlayerPosition != "defense1"  {
             self.defense1Coordinates = CLLocationCoordinate2D(
@@ -5107,16 +5095,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func endGame() {
-        slot1Powerup = 0
-        slot2Powerup = 0
-        slot3Powerup = 0
-        currentFunds = 0
-        map3d = true
-        quittingGame = false
-        playerTagCount = 0
         self.captureTimer.invalidate()
         self.itemTimer.invalidate()
         self.gameTimer.invalidate()
+        self.stateTimer.invalidate()
         self.locationManager.allowsBackgroundLocationUpdates = false
         self.locationManager.stopRangingBeacons(in: self.detectionRegion)
         self.locationManager.stopUpdatingLocation()
