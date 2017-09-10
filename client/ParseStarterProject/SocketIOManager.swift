@@ -199,8 +199,9 @@ class SocketIOManager: NSObject {
                        latitude: Double,
                        longitude: Double,
                        extra: String,
+                       timingOut: Double = 3,
                        completionHandler: @escaping(_ didPost: Bool) -> Void) {
-        socket.emitWithAck("postGameEvent", gameID, sender, eventName, recipient, latitude, longitude, extra).timingOut(after: 3) {data in
+        socket.emitWithAck("postGameEvent", gameID, sender, eventName, recipient, latitude, longitude, extra).timingOut(after: timingOut) {data in
             if data[0] as? String == "NO ACK" {
                 completionHandler(false)
             } else {

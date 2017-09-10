@@ -978,7 +978,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func postMineTag(tagee: String, latitude: Double) {
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "mine_tag", sender: localPlayerPosition, recipient: tagee, latitude: latitude, longitude: 0, extra: "",completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "mine_tag", sender: localPlayerPosition, recipient: tagee, latitude: latitude, longitude: 0, extra: "", timingOut: 10, completionHandler: { (didPost) -> Void in
         })
     }
     
@@ -1549,7 +1549,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             }
             let recipient = localPlayerPosition.substring(to:localPlayerPosition.index(localPlayerPosition.startIndex, offsetBy: 7))
             SocketIOManager.sharedInstance.postGameEvent(
-                gameID: globalGameID, eventName: eventName, sender: localPlayerPosition, recipient: recipient, latitude: screenCoordinate.latitude, longitude: screenCoordinate.longitude, extra: "", completionHandler: { (didPost) -> Void in
+                gameID: globalGameID, eventName: eventName, sender: localPlayerPosition, recipient: recipient, latitude: screenCoordinate.latitude, longitude: screenCoordinate.longitude, extra: "", timingOut: 10, completionHandler: { (didPost) -> Void in
             })
             self.dropMine(latitude:screenCoordinate.latitude, longitude: screenCoordinate.longitude, isSuper: isSuper)
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
@@ -2332,6 +2332,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                             self.logicCapturing2?.currentTime = 0
                             self.logicCapture?.play()
                             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
+                        } else {
+                            pointCaptureState = ""
+                            playerCapturingPoint = ""
+                            self.displayAlert("Error", message: "You were unable to capture the flag.  Please make sure you have an active network connection.")
                         }
                 })
             }
@@ -2453,7 +2457,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func tagLocalPlayer(tagger: String, method: String) {
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: localPlayerPosition, latitude: 0, longitude: 0, extra: method, completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: localPlayerPosition, latitude: 0, longitude: 0, extra: method, timingOut: 999, completionHandler: { (didPost) -> Void in
         })
         if method == "bluetooth" {
             self.logicLoseLife?.play()
@@ -3652,7 +3656,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             recipient = "defense"
         }
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "item_post", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: long, extra: "", completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "item_post", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: long, extra: "", timingOut: 999, completionHandler: { (didPost) -> Void in
         })
     }
     
@@ -3662,7 +3666,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             recipient = "defense"
         }
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "item_unpost", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: 0, extra: "", completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "item_unpost", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: 0, extra: "", timingOut: 999, completionHandler: { (didPost) -> Void in
         })
     }
     
@@ -4543,6 +4547,8 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 SocketIOManager.sharedInstance.postGameEvent(gameID: globalGameID, eventName: "capturing", sender: localPlayerPosition, recipient: "all", latitude: 0, longitude: 0, extra: "", completionHandler: { (passedCheck) -> Void in
                     if passedCheck {
                         self.localPlayerCapturingPointEvent()
+                    } else {
+                        self.displayAlert("Error", message: "You were unable to capture the flag.  Please make sure you have an active network connection.")
                     }
                 })
             } else if pointCaptureState == "capturing" && playerCapturingPoint != localPlayerPosition && self.eventsLabel.text != "Flag not in base.."  {
@@ -4560,7 +4566,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             
             //if player capturing point exits region before timer expires, cancel/reset timer
             if playerCapturingPoint == localPlayerPosition && pointCaptureState == "capturing" {
-                SocketIOManager.sharedInstance.postGameEvent(gameID: globalGameID, eventName: "stopCapturing", sender: localPlayerPosition, recipient: "all", latitude: 0, longitude: 0, extra: "",completionHandler: { (didSend) -> Void in
+                SocketIOManager.sharedInstance.postGameEvent(gameID: globalGameID, eventName: "stopCapturing", sender: localPlayerPosition, recipient: "all", latitude: 0, longitude: 0, extra: "", timingOut: 10, completionHandler: { (didSend) -> Void in
                     self.localPlayerStopCapturingPointEvent()
                 })
             }
