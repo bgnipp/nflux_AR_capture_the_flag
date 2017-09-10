@@ -31,6 +31,8 @@ class SocketIOManager: NSObject {
     
     func listenForWaitingUserUpdates(gameID: String, completionHandler: @escaping (_ userList: [String : [String : Any]], _ gameState: Int) -> Void) {
         socket.on("updateWaitingUsers") { (dataArray, ack) -> Void in
+            print("YO")
+            print(dataArray)
             let userDict = dataArray[0] as! [String : [String : Any]]
             let gameState = dataArray[1] as! Int
             completionHandler(userDict, gameState)
@@ -47,6 +49,7 @@ class SocketIOManager: NSObject {
     }
     
     func leaveQueuedGame(gameID: String) {
+        stopListeningForWaitingUserUpdates()
         socket.emit("leaveGame", gameID, UDID)
     }
     

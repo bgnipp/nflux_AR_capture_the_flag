@@ -91,8 +91,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var offensedroptempx = CustomPinBluepersonX(coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0), title: "temp")
     var offensedroptempflag = CustomPinBluepersonflag(coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0), title: "temp")
     var defensedroptemp = CustomPinRedperson(coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0), title: "temp")
-    var pointdroptemp = CustomPin(coordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0), title: "Flag",
-        subtitle: "Not captured")
     var circletemp = MKCircle(center: CLLocationCoordinate2D(latitude: 0, longitude: 0), radius: CLLocationDistance(5))
 
     //sounds
@@ -203,7 +201,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var offense5flagDropPin = CustomPinBluepersonflag(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "offense 5")
     
     var pointDropPin = CustomPin(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "Flag", subtitle: "Not captured")
-    var flagAnnotationHidden = false
     var baseDropPin = CustomPinBase(coordinate: CLLocationCoordinate2D(latitude: 0.0, longitude: 0.0), title: "Offense's base")
     
     var defense1Lat: Double = 0
@@ -2321,12 +2318,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                     gameID: globalGameID, eventName: "capture", sender: localPlayerPosition, recipient: "all", latitude: 0, longitude: 0, extra: "", completionHandler: { (passedCheck) -> Void in
                         if passedCheck {
                             pointCaptureState = "captured"
+                            self.updateFlagState()
                             playerCapturingPoint = localPlayerPosition
-                            self.flagImageView.isHidden = false
+                            self.flagImageView.isHidden = false // show flag in top right of capturer's screen
                             self.logEvent("Captured the flag! Get back to base")
-                            self.mapView.removeAnnotation(self.pointDropPin)
-                            self.mapView.removeAnnotation(self.pointdroptemp)
-                            self.flagAnnotationHidden = true
                             self.captureTimer.invalidate()
                             self.logicCapturing2?.stop()
                             self.logicCapturing2?.currentTime = 0
@@ -4100,17 +4095,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             self.mapView.addAnnotation(self.pointDropPin)
             self.mapView?.add(self.pointCircle)
         }
-        else if testAnnType == "af" {
-            self.pointdroptemp.coordinate = screenCoordinate
-            self.pointdroptemp.title = "Flag"
-            self.mapView.addAnnotation(self.pointdroptemp)
-            self.tempdropcircle2 = MKCircle(center: screenCoordinate, radius: CLLocationDistance(Int(testAnnCaption)!))
-            self.mapView?.add(self.tempdropcircle2)
-        }
-        else if testAnnType == "uaf" {
-            self.mapView.removeAnnotation(self.pointdroptemp)
-            self.mapView?.remove(self.tempdropcircle2)
-        }
         else if testAnnType == "gt" {
             gameTimerCount = Int(testAnnCaption)!
         }
@@ -4895,18 +4879,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.defenseRechargeTimer.tolerance = 0.3
             }
         }
-
-        //hide flag from map if it is captured, or return it
-        if playerCapturingPoint != "" && self.flagAnnotationHidden == false {
-            self.mapView.removeAnnotation(self.pointDropPin)
-            self.flagAnnotationHidden = true
-        }
-        if playerCapturingPoint == "" && self.flagAnnotationHidden == true {
-            self.pointDropPin = CustomPin(coordinate: self.pointCoordinates, title: "Flag", subtitle: "Not captured")
-            self.mapView.addAnnotation(self.pointDropPin)
-            self.flagAnnotationHidden = false
-        }
-        
         //update icon label and warning (for flag status) - e.g. in case where player drops and flag resets
         if playerCapturingPoint == ""  && localPlayerStatus == 1 {
             self.alertIconImageView.image = UIImage(named:"greenIcon.png")
@@ -5083,14 +5055,13 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func updateFlagState() {
+        print("updateflagstate fired, pointcapturestate: ", pointCaptureState)
         if pointCaptureState == "" {
-            self.pointDropPin = CustomPin(coordinate: self.pointCoordinates, title: "Flag", subtitle: "Not captured")
+            //self.pointDropPin = CustomPin(coordinate: self.pointCoordinates, title: "Flag", subtitle: "Not captured")
             self.mapView.addAnnotation(self.pointDropPin)
-            self.flagAnnotationHidden = false
         }
         else if pointCaptureState == "captured" {
             self.mapView.removeAnnotation(self.pointDropPin)
-            self.flagAnnotationHidden = true
         }
     }
     
