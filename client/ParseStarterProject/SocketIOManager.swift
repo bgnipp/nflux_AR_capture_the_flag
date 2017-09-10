@@ -51,32 +51,46 @@ class SocketIOManager: NSObject {
     }
     
     func postHeartbeat(gameID: String) {
-        print("postHeartbeat fired, gameID: ", gameID)
         socket.emit("postHeartbeat", gameID)
     }
     
-    func switchTeams(gameID: String, udid: String, completionHandler: @escaping() -> Void) {
+    func switchTeams(gameID: String, udid: String, completionHandler: @escaping(_ success: Bool) -> Void) {
         socket.emitWithAck("switchTeams", gameID, udid).timingOut(after: 3) {data in
-            globalIsOffense = !globalIsOffense
-            completionHandler()
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(true)
+            }
         }
     }
     
     func createGame(gameID: String, udid: String, completionHandler: @escaping(_ canCreate: Bool) -> Void) {
         socket.emitWithAck("createGame", gameID, udid).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
     func stopCreatingGame(gameID: String, udid: String, completionHandler: @escaping(_ didStop: Bool) -> Void) {
         socket.emitWithAck("stopCreatingGame", gameID, udid).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
     func joinGame(gameID: String, udid: String, completionHandler: @escaping(_ canProceed: Bool) -> Void) {
         socket.emitWithAck("joinGame", gameID, udid).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
@@ -94,7 +108,11 @@ class SocketIOManager: NSObject {
                          testModeEnabled: Bool,
                          completionHandler: @escaping(_ canProceed: Bool) -> Void) {
         socket.emitWithAck("postGameOptions", gameID, tagSensitivity, gameLength, captureTime, itemsEnabled, testModeEnabled).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
@@ -110,7 +128,11 @@ class SocketIOManager: NSObject {
                          itemModeOn: Bool,
                          completionHandler: @escaping(_ canProceed: Bool) -> Void) {
         socket.emitWithAck("postItemOptions", gameID, offenseStartingFunds, defenseStartingFunds, itemAbundanceOffense, itemAbundanceDefense, itemPricesOffense, itemPricesDefense, itemsDisabledOffense, itemsDisabledDefense, itemModeOn).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
@@ -123,7 +145,11 @@ class SocketIOManager: NSObject {
                            base_radius: Double,
                          completionHandler: @escaping(_ canProceed: Bool) -> Void) {
         socket.emitWithAck("postPointLocation", gameID, point_lat, point_lon, point_radius, base_lat, base_lon, base_radius).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     
@@ -149,8 +175,10 @@ class SocketIOManager: NSObject {
                          latitude: Double,
                          longitude: Double,
                          completionHandler: @escaping(_ playerState: [String: [String: Any] ], _ otherState: [String: Any]) -> Void) {
-        socket.emitWithAck("updateGameState", gameID, position, status, latitude, longitude).timingOut(after: 3) {data in
-            completionHandler(data[0] as! [String: [String: Any] ], data[1] as! [String: Any] )
+        socket.emitWithAck("updateGameState", gameID, position, status, latitude, longitude).timingOut(after: 2) {data in
+            if data[0] as? String != "NO ACK" {
+                completionHandler(data[0] as! [String: [String: Any] ], data[1] as! [String: Any] )
+            }
         }
     }
     
@@ -173,7 +201,11 @@ class SocketIOManager: NSObject {
                        extra: String,
                        completionHandler: @escaping(_ didPost: Bool) -> Void) {
         socket.emitWithAck("postGameEvent", gameID, sender, eventName, recipient, latitude, longitude, extra).timingOut(after: 3) {data in
-            completionHandler(data[0] as! Bool)
+            if data[0] as? String == "NO ACK" {
+                completionHandler(false)
+            } else {
+                completionHandler(data[0] as! Bool)
+            }
         }
     }
     

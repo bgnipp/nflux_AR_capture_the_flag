@@ -81,6 +81,8 @@ class PointLocationViewController: UIViewController, MKMapViewDelegate, UITextFi
                                 self.pointLocationSystemTimer.invalidate()
                                 self.performSegue(withIdentifier: "showWaitingViewController", sender: nil)
                             })
+                        } else {
+                            self.displayAlert("Couldn't set point location", message: "Either your network failed or some other shit happened. Please try again.")
                         }
                     })
                 }

@@ -172,6 +172,9 @@ class ItemOptionsViewController: UIViewController, UITextViewDelegate, UITextFie
                                                                 self.itemOptionsSystemTimer.invalidate()
                                                                 self.performSegue(withIdentifier: "showPointLocationViewControllerFromItemOptionsViewController", sender: nil)
                                                             }
+                                                            else {
+                                                                self.displayAlert("Couldn't set item options", message: "Either your network failed or some other shit happened. Please try again.")
+                                                            }
             })
         }
         

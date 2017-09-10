@@ -126,6 +126,8 @@ class PairViewController: UIViewController, UITextFieldDelegate {
                         self.entersoundlow?.play()
                         self.performSegue(withIdentifier: "showWaitingViewControllerFromPair", sender: nil)
                     })
+                } else {
+                    self.displayAlert("Couldn't join game", message: "Either your network failed or some other shit happened. Please try again.")
                 }
             })
         }
@@ -148,6 +150,8 @@ class PairViewController: UIViewController, UITextFieldDelegate {
                         self.refreshTimer.invalidate()
                         self.entersoundlow?.play()
                         self.performSegue(withIdentifier: "showGameOptionsViewController", sender: self)
+                    } else {
+                        self.displayAlert("Couldn't create game", message: "Either your network failed or some other shit happened. Please try again.")
                     }
                 })
             }))
@@ -201,8 +205,14 @@ class PairViewController: UIViewController, UITextFieldDelegate {
     
     @IBAction func switchTeamsButton(_ sender: AnyObject) {
         if checkIsConnected() {
-            SocketIOManager.sharedInstance.switchTeams(gameID: globalGameID, udid: UDID, completionHandler: { () -> Void in
-                self.updateBackgroundColor(isOffense: globalIsOffense)
+            SocketIOManager.sharedInstance.switchTeams(gameID: globalGameID, udid: UDID, completionHandler: { (success: Bool) -> Void in
+                print("SUCCESS: ", success)
+                if success {
+                    globalIsOffense = !globalIsOffense
+                    self.updateBackgroundColor(isOffense: globalIsOffense)
+                } else {
+                    self.notifyNetworkFailure()
+                }
             })
         }
     }

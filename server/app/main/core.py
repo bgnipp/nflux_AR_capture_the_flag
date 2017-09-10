@@ -115,6 +115,7 @@ def handle_message(game_id, udid):
     	room=game_id,
     	broadcast=True
     )
+    return True
 
 @socketio.on('createGame')
 def handle_message(game_id, udid):

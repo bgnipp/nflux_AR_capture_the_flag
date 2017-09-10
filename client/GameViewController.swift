@@ -3965,7 +3965,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.activeItemImageView3.isHidden = false
             }
         }
-        
     }
     
     func removeActiveItemImageView(_ item: Int) {

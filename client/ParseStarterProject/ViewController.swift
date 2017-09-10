@@ -51,8 +51,10 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
             globalUserName = userName.text!
             globalIsOffense = offenseTrueSwitch.isOn
             SocketIOManager.sharedInstance.socket.emitWithAck("enterQueue", globalUserName, globalIsOffense, UDID, lat, long).timingOut(after: 3) {game in
-                print("JOINiNG OBJ: ", game)
-                if game[0] as! String == "rejoining" {
+                if game[0] as? String == "NO ACK" {
+                    print("YES")
+                }
+                if game[0] as? String == "rejoining" {
                     globalGameID = game[1] as! String
                     globalIsRejoining = true
                     let gameConfig = game[2] as! [String: Any]
@@ -62,7 +64,7 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
                     self.entersound?.play()
                     self.performSegue(withIdentifier: "showGameViewControllerFromView", sender: nil)
                 }
-                else if game[0] as! String == "not_rejoining" {
+                else if game[0] as? String == "not_rejoining" {
                     globalGameID = game[1] as! String
                     self.entersound?.play()
                     self.performSegue(withIdentifier: "login", sender:self)

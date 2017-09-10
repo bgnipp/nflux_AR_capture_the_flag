@@ -380,6 +380,8 @@ class GameOptionsViewController: UIViewController, UITextViewDelegate, UITextFie
                     else {
                         self.performSegue(withIdentifier: "showItemOptionsViewControllerFromGameOptionsViewController", sender: nil)
                     }
+                } else {
+                    self.displayAlert("Couldn't set game options", message: "Either your network failed or some other shit happened. Please try again.")
                 }
             })
         }
@@ -395,6 +397,8 @@ class GameOptionsViewController: UIViewController, UITextViewDelegate, UITextFie
                 self.gameOptionsSystemTimer.invalidate()
                 self.backsound?.play()
                 self.performSegue(withIdentifier: "showPairViewControllerFromGameOptionsViewController", sender: nil)
+            } else {
+                self.displayAlert("Couldn't quit game", message: "Either your network failed or some other shit happened. Please try again.")
             }
         })
     }

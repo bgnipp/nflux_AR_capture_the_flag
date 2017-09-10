@@ -75,6 +75,10 @@ var gameWinner = ""
 
 extension UIViewController: CLLocationManagerDelegate, CBPeripheralManagerDelegate {
     
+    func notifyNetworkFailure() {
+        displayAlert("Network failure", message: "Could not connect to server.  Make sure you are in an area with sufficient cellular reception")
+    }
+    
     func checkIsConnected() -> Bool {
         if Reachability.isConnectedToNetwork() == false {
             displayAlert("No internet connection", message: "nFlux requires an active internet/data connection.  Make sure airplane mode on your phone is OFF, and that you have an active data plan.")
