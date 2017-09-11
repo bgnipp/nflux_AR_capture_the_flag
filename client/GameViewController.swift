@@ -57,8 +57,8 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     let SCAN_DURATION: Int = 15 / STATE_TIMER_INTERVAL
     let SUPER_SCAN_DURATION: Int = 15 / STATE_TIMER_INTERVAL
-    let JAMMER_DURATION: Int = 60 / STATE_TIMER_INTERVAL
-    let SPYBOT_DURATION: Int = 60 / STATE_TIMER_INTERVAL
+    let JAMMER_DURATION: Int = 75 / STATE_TIMER_INTERVAL
+    let SPYBOT_DURATION: Int = 75 / STATE_TIMER_INTERVAL
     let REACH_DURATION: Int = 60 / STATE_TIMER_INTERVAL
     let SENSE_DURATION: Int = 60 / STATE_TIMER_INTERVAL
     
@@ -1039,7 +1039,8 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let mineDropperNickname = globalPlayerNamesDict[mineDropper]!
         let mineRecipient = gameEvent["recipient"] as! String
         if localPlayerPosition == mineRecipient {
-            self.tagLocalPlayer(tagger: mineDropperNickname, method: "mine")
+            self.logEvent("Tagged by \(mineDropperNickname)'s mine!")
+            self.bombtag?.play()
         } else if mineDropper != localPlayerPosition {
             self.bombtag?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
@@ -1057,7 +1058,9 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let bombRecipient = gameEvent["recipient"] as! String
         let bombRecipientNickname = globalPlayerNamesDict[bombRecipient]!
         if localPlayerPosition == bombRecipient {
-            self.tagLocalPlayer(tagger: bomberNickname, method: "bomb")
+            self.tagLocalPlayer()
+            self.logEvent("Tagged by \(bomberNickname)'s bomb!")
+            self.bombtag?.play()
         } else if bomber != localPlayerPosition {
             self.bombtag?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
@@ -1163,15 +1166,17 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func processSickleEvent(gameEvent: [String: Any]) {
         let reaper = gameEvent["sender"] as! String
+        let reaperNickname = globalPlayerNamesDict[reaper]!
         let victim = gameEvent["recipient"] as! String
+        let victimNickname = globalPlayerNamesDict[victim]!
         if victim == localPlayerPosition && localPlayerStatus == 1 {
-            let reaper = gameEvent["sender"] as! String
-            let reaperNickname = globalPlayerNamesDict[reaper]!
-            self.tagLocalPlayer(tagger: reaperNickname, method: "sickle")
+            self.tagLocalPlayer()
+            self.logEvent("Tagged by \(reaperNickname)'s sickle!")
+            self.sickletag?.play()
         } else if reaper != localPlayerPosition {
             self.logicSFX4?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-            self.logEvent("\(reaper) sickled \(victim)!")
+            self.logEvent("\(reaperNickname) sickled \(victimNickname)!")
         }
     }
     
@@ -1179,7 +1184,9 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let lightninger = gameEvent["sender"] as! String
         let lightningerNickname = globalPlayerNamesDict[lightninger]!
         if globalIsOffense == true && localPlayerStatus == 1 {
-            self.tagLocalPlayer(tagger: lightningerNickname, method: "lightning")
+            self.tagLocalPlayer()
+            self.logEvent("Tagged by \(lightningerNickname)'s lightning!")
+            self.lightningtag?.play()
         } else if lightninger != localPlayerPosition {
             self.logEvent("\(lightningerNickname) used lightning!")
             self.lightning?.play()
@@ -1245,6 +1252,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             var logString = ""
             if tagger == localPlayerPosition {
                 logString = "You tagged \(tageeNickname)!"
+                playerTagCount += 1
             } else {
                 logString = "\(taggerNickname) tagged \(tageeNickname)"
             }
@@ -1983,8 +1991,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                             self.logEvent("Tagged by the blue beacon!")
                             tagger = "blue beacon"
                         }
-                        self.tagLocalPlayer(tagger: tagger, method: "reg")
+                        self.tagLocalPlayer()
                         self.logicLoseLife?.play()
+                        SocketIOManager.sharedInstance.postGameEvent(
+                            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: tagger, latitude: 0, longitude: 0, extra: "reg", timingOut: 99, completionHandler: { (didPost) -> Void in
+                        })
                     }
                     else {
                         self.shieldLevel -= 1
@@ -2417,8 +2428,9 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func applicationDidEnterBackground(_ application: UIApplication) {
-        self.tagLocalPlayer(tagger: "game", method: "backgroud")
+        self.tagLocalPlayer()
         self.logicLoseLife?.play()
+        displayAlert("App backgrounded", message: "You automatically get tagged when you put the app in the background (to prevent cheating).")
     }
     
     func quitGame() {
@@ -2452,32 +2464,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         self.entersoundlow?.play()
     }
     
-    func tagLocalPlayer(tagger: String, method: String) {
-        SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: localPlayerPosition, latitude: 0, longitude: 0, extra: method, timingOut: 999, completionHandler: { (didPost) -> Void in
-        })
-        if method == "bluetooth" {
-            self.logicLoseLife?.play()
-            displayAlert("Bluetooth disabled", message: "You automatically get tagged when you disable bluetooth! Enable bluetooth to continue playing. Make sure airplane mode is disabled.")
-        } else if method == "network" {
-            self.logicLoseLife?.play()
-            displayAlert("Network failure", message: "To prevent cheating, you are automatically tagged when your internet connection fails for an extended period.  Make sure airpline mode is disabled.")
-        } else if method == "background" {
-            self.logicLoseLife?.play()
-            displayAlert("App backgrounded", message: "To prevent cheating, you are automatically tagged when you background the app.")
-        } else if method == "mine" {
-            self.logEvent("Tagged by \(tagger)'s mine!")
-            self.bombtag?.play()
-        } else if method == "bomb" {
-            self.logEvent("Tagged by \(tagger)'s bomb!")
-            self.bombtag?.play()
-        } else if method == "sickle" {
-            self.logEvent("Tagged by \(tagger)'s sickle!")
-            self.sickletag?.play()
-        } else if method == "lightning" {
-            self.logEvent("Tagged by \(tagger)'s lightning!")
-            self.lightningtag?.play()
-        }
+    func tagLocalPlayer() {
         AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
         localPlayerStatus = 0
         self.tagTimerCount = 1
@@ -4300,11 +4287,15 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func stateUpdate() {
         if bluetoothOn == false  && localPlayerStatus == 1 && devMode == false {
-            self.tagLocalPlayer(tagger: "na", method: "bluetooth")
+            self.tagLocalPlayer()
+            self.logicLoseLife?.play()
+            displayAlert("Bluetooth disabled", message: "You automatically get tagged when you disable bluetooth! Enable bluetooth to continue playing. Make sure airplane mode is disabled.")
         }
         if self.networkFailedCount == NETWORK_FAILURE_MAX {
             self.networkFailedCount = 0
-            self.tagLocalPlayer(tagger: "na", method: "network")
+            self.tagLocalPlayer()
+            self.logicLoseLife?.play()
+            displayAlert("Network failure", message: "To prevent cheating, you are automatically tagged when your internet connection fails for an extended period.  Make sure airpline mode is disabled.")
         }
         SocketIOManager.sharedInstance.updateGameState(gameID: globalGameID,
                                                        position: localPlayerPosition,
@@ -4847,7 +4838,8 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         if self.baseRegion.contains(currentCoordinate) == true {
             self.localPlayerRegion = 1
             if localPlayerStatus == 1 {
-                self.tagLocalDefensePlayer()
+                self.tagLocalPlayer()
+                self.logicLoseLife?.play()
                 self.logEvent("Entered opponents' base")
             }
         }
@@ -5022,19 +5014,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         self.logicSFX3?.play()
     }
     
-    func tagLocalDefensePlayer() {
-        localPlayerStatus = 0
-        self.captureTimer.invalidate()
-        self.alertIconImageView.image = UIImage(named:"walkIcon.png")
-        self.iconLabel.text = "Return to base"
-        self.peripheralManager.stopAdvertising()
-        AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-        self.logicLoseLife?.play()
-        self.tagTimerCount = 1
-        self.tagTimer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(GameViewController.tagTimerUpdate), userInfo: nil, repeats: true)
-        self.tagTimer.tolerance = 0.3
-    }
-    
     func otherPlayerCapturingPointEvent(isOffense: Bool) {
         if !isOffense {
             if localPlayerStatus == 1 {
@@ -5072,6 +5051,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func endGame() {
+        SocketIOManager.sharedInstance.stopListeningForGameEvents()
         self.captureTimer.invalidate()
         self.itemTimer.invalidate()
         self.gameTimer.invalidate()
