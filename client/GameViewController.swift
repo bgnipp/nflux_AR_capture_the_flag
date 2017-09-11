@@ -484,6 +484,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         updateBackgroundColor(isOffense: globalIsOffense)
         hideUIElements()
         
+        SocketIOManager.sharedInstance.listenForGameEvents(completionHandler: { (gameEvent) -> Void in
+            self.processGameEvent(gameEvent: gameEvent)
+        })
+        
         //intro sound
         AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
         self.logicGamestart2?.play()
@@ -631,9 +635,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         if gameWinner != "" {
             endGame()
         }
-        SocketIOManager.sharedInstance.listenForGameEvents(completionHandler: { (gameEvent) -> Void in
-            self.processGameEvent(gameEvent: gameEvent)
-        })
     }
     
     func checkForMineTag() {
@@ -1306,6 +1307,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func processGameEvent(gameEvent: [String: Any]) {
         let eventName = gameEvent["eventName"] as! String
+        print("PROCESS game event fired, eventName: ", eventName)
         switch eventName {
             case "mine_plant": processMinePlantEvent(gameEvent: gameEvent)
             case "mine_tag": processMineTagEvent(gameEvent: gameEvent)
@@ -3912,7 +3914,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func addActiveItemImageView(_ item: Int) {
-        if activeItemImageView.isHidden == true {
+        if activeItemImageView.isHidden {
             if item == 7 {
                 self.activeItemImageView.image = UIImage(named:"jammer.png")
                 self.activeItemImageView.isHidden = false
@@ -3929,7 +3931,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.activeItemImageView.image = UIImage(named:"fist.png")
                 self.activeItemImageView.isHidden = false
             }
-        } else if activeItemImageView2.isHidden == true {
+        } else if activeItemImageView2.isHidden {
             if item == 7 {
                 self.activeItemImageView2.image = UIImage(named:"jammer.png")
                 self.activeItemImageView2.isHidden = false
@@ -3946,7 +3948,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.activeItemImageView2.image = UIImage(named:"fist.png")
                 self.activeItemImageView2.isHidden = false
             }
-        } else if activeItemImageView3.isHidden == true {
+        } else if activeItemImageView3.isHidden {
             if item == 7 {
                 self.activeItemImageView3.image = UIImage(named:"jammer.png")
                 self.activeItemImageView3.isHidden = false
