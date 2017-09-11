@@ -33,7 +33,6 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
     @IBOutlet var nstructionsOutlet: UIButton!
     
     @IBAction func letsPlay(_ sender: AnyObject) {
-        
         if checkIsConnected() == false {
             print("not connected")
         }
@@ -42,18 +41,14 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
         }
             //note - must add 12 to desired limit (to account for optional("")  )
         else if String(describing: userName.text).characters.count > 24 {
-            displayAlert("Name too long", message: "Please limit your name to 12 characters, sorry!")
-        }
-        else {
+            displayAlert("Name too long", message: "Please limit your name to 12 characters.")
+        } else {
             currentLocation = locManager.location
             let lat = currentLocation.coordinate.latitude
             let long = currentLocation.coordinate.longitude
             globalUserName = userName.text!
             globalIsOffense = offenseTrueSwitch.isOn
             SocketIOManager.sharedInstance.socket.emitWithAck("enterQueue", globalUserName, globalIsOffense, UDID, lat, long).timingOut(after: 3) {game in
-                if game[0] as? String == "NO ACK" {
-                    print("YES")
-                }
                 if game[0] as? String == "rejoining" {
                     globalGameID = game[1] as! String
                     globalIsRejoining = true
@@ -74,8 +69,8 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
                 }
             }
         }
-
     }
+    
     @IBOutlet var defenseOutlet: UILabel!
     @IBOutlet var letsPlayOutlet: UIButton!
     @IBOutlet var offenseOutlet: UILabel!

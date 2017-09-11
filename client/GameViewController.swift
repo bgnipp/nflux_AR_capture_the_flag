@@ -4643,6 +4643,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 self.revealTagee3Count = 0
             }
         }
+        
+        if playerCapturingPoint == localPlayerPosition {
+            SocketIOManager.sharedInstance.postCaptureHeartbeat(gameID: globalGameID)
+        }
     }
     
     func defenseStateUpdate() {
