@@ -1213,27 +1213,27 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func unmapItem(lat: Double) {
-        if self.drop1Dropped == true && lat == self.drop1Coordinates.latitude {
+        if lat == self.drop1Coordinates.latitude {
             self.drop1Dropped = false
             self.mapView.removeAnnotation(self.drop1DropPin)
             self.mapView.remove(self.drop1Circle)
             self.drop1DropPin.coordinate.latitude = 0
-        } else if self.drop2Dropped == true && lat == self.drop2Coordinates.latitude {
+        } else if lat == self.drop2Coordinates.latitude {
             self.drop2Dropped = false
             self.mapView.removeAnnotation(self.drop2DropPin)
             self.mapView.remove(self.drop2Circle)
             self.drop2DropPin.coordinate.latitude = 0
-        } else if self.drop3Dropped == true && lat == self.drop3Coordinates.latitude {
+        } else if lat == self.drop3Coordinates.latitude {
             self.drop3Dropped = false
             self.mapView.removeAnnotation(self.drop3DropPin)
             self.mapView.remove(self.drop3Circle)
             self.drop3DropPin.coordinate.latitude = 0
-        } else if self.drop4Dropped == true && lat == self.drop4Coordinates.latitude {
+        } else if lat == self.drop4Coordinates.latitude {
             self.drop4Dropped = false
             self.mapView.removeAnnotation(self.drop4DropPin)
             self.mapView.remove(self.drop4Circle)
             self.drop4DropPin.coordinate.latitude = 0
-        } else if self.drop5Dropped == true && lat == self.drop5Coordinates.latitude {
+        } else if lat == self.drop5Coordinates.latitude {
             self.drop5Dropped = false
             self.mapView.removeAnnotation(self.drop5DropPin)
             self.mapView.remove(self.drop5Circle)
@@ -3175,11 +3175,9 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             let roll2 = Int(arc4random_uniform(15) + 1)
             if roll2 == 5 {
                 genItem()
-                print("placed item directly")
                 self.directitem?.play()
                 AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
             } else {
-                print("rolled item location")
                 rollItemLocation()
             }
         }
@@ -3335,97 +3333,86 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let randLongTruncated = String(randLong).trunc(15)
         let randLongTDouble = Double(randLongTruncated)
         if globalIsOffense == false && self.baseRegion.contains(CLLocationCoordinate2D(latitude: randLatTDouble!, longitude: randLongTDouble!)) {
-            print("dropped in base region, rerolling..")
             self.rollItemLocation()
         } else {
             self.postItem(lat: randLatTDouble!, long: randLongTDouble!)
         }
     }
     
+    func updateDropOrder(droppedItem: Int) {
+        self.fourthDropped = self.thirdDropped
+        self.thirdDropped = self.secondDropped
+        self.secondDropped = self.firstDropped
+        self.firstDropped = droppedItem
+    }
+    
+    func isReplaceCandidate(dropSlot: Int) -> Bool {
+        return (self.firstDropped != dropSlot && self.secondDropped != dropSlot && self.thirdDropped != dropSlot && self.fourthDropped != dropSlot)
+    }
+    
     func mapItem(lat: Double, long: Double) {
         let coord = CLLocationCoordinate2D(latitude: lat, longitude: long)
-        print("map item fired, lat \(lat) long \(long)")
         self.itemdrop?.play()
         AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-        if self.drop1Dropped == false || (self.firstDropped != 1 && self.secondDropped != 1 && self.thirdDropped != 1 && self.fourthDropped != 1) {
+        if self.drop1Dropped == false || self.isReplaceCandidate(dropSlot: 1) {
+            self.drop1Dropped = true
             self.mapView.removeAnnotation(self.drop1DropPin)
             self.mapView.remove(self.drop1Circle)
-            self.drop1Dropped = true
             self.drop1DropPin = CustomPinDrop(coordinate: coord, title: "Item")
             self.drop1Coordinates = coord
             self.mapView.addAnnotation(self.drop1DropPin)
             self.drop1Region = CLCircularRegion(center: coord, radius: CLLocationDistance(5), identifier: "")
             self.drop1Circle = MKCircle(center: coord, radius: CLLocationDistance(5))
             self.mapView.add(self.drop1Circle)
-            self.fourthDropped = self.thirdDropped
-            self.thirdDropped = self.secondDropped
-            self.secondDropped = self.firstDropped
-            self.firstDropped = 1
-            print("drop 1 dropped, lat \(lat) long \(long)")
+            self.updateDropOrder(droppedItem: 1)
         }
-        else if self.drop2Dropped == false || (self.firstDropped != 2 && self.secondDropped != 2 && self.thirdDropped != 2 && self.fourthDropped != 2) {
+        else if self.drop2Dropped == false || self.isReplaceCandidate(dropSlot: 2) {
+            self.drop2Dropped = true
             self.mapView.removeAnnotation(self.drop2DropPin)
             self.mapView.remove(self.drop2Circle)
-            self.drop2Dropped = true
             self.drop2DropPin = CustomPinDrop(coordinate: coord, title: "Item")
             self.drop2Coordinates = coord
             self.mapView.addAnnotation(self.drop2DropPin)
             self.drop2Region = CLCircularRegion(center: coord, radius: CLLocationDistance(5), identifier: "")
             self.drop2Circle = MKCircle(center: coord, radius: CLLocationDistance(5))
             self.mapView.add(self.drop2Circle)
-            self.fourthDropped = self.thirdDropped
-            self.thirdDropped = self.secondDropped
-            self.secondDropped = self.firstDropped
-            self.firstDropped = 2
-            print("drop 2 dropped, lat \(lat) long \(long)")
+            self.updateDropOrder(droppedItem: 2)
         }
-        else if self.drop3Dropped == false || (self.firstDropped != 3 && self.secondDropped != 3 && self.thirdDropped != 3 && self.fourthDropped != 3) {
+        else if self.drop3Dropped == false || self.isReplaceCandidate(dropSlot: 3) {
+            self.drop3Dropped = true
             self.mapView.removeAnnotation(self.drop3DropPin)
             self.mapView.remove(self.drop3Circle)
-            self.drop3Dropped = true
             self.drop3DropPin = CustomPinDrop(coordinate: coord, title: "Item")
             self.drop3Coordinates = coord
             self.mapView.addAnnotation(self.drop3DropPin)
             self.drop3Region = CLCircularRegion(center: coord, radius: CLLocationDistance(5), identifier: "")
             self.drop3Circle = MKCircle(center: coord, radius: CLLocationDistance(5))
             self.mapView.add(self.drop3Circle)
-            self.fourthDropped = self.thirdDropped
-            self.thirdDropped = self.secondDropped
-            self.secondDropped = self.firstDropped
-            self.firstDropped = 3
-            print("drop 3 dropped, lat \(lat) long \(long)")
+            self.updateDropOrder(droppedItem: 3)
         }
-        else if self.drop4Dropped == false || (self.firstDropped != 4 && self.secondDropped != 4 && self.thirdDropped != 4 && self.fourthDropped != 4) {
+        else if self.drop4Dropped == false || self.isReplaceCandidate(dropSlot: 4) {
+            self.drop4Dropped = true
             self.mapView.removeAnnotation(self.drop4DropPin)
             self.mapView.remove(self.drop4Circle)
-            self.drop4Dropped = true
             self.drop4DropPin = CustomPinDrop(coordinate: coord, title: "Item")
             self.drop4Coordinates = coord
             self.mapView.addAnnotation(self.drop4DropPin)
             self.drop4Region = CLCircularRegion(center: coord, radius: CLLocationDistance(5), identifier: "")
             self.drop4Circle = MKCircle(center: coord, radius: CLLocationDistance(5))
             self.mapView.add(self.drop4Circle)
-            self.fourthDropped = self.thirdDropped
-            self.thirdDropped = self.secondDropped
-            self.secondDropped = self.firstDropped
-            self.firstDropped = 4
-            print("drop 4 dropped, lat \(lat) long \(long)")
+            self.updateDropOrder(droppedItem: 4)
         }
-        else if self.drop5Dropped == false || (self.firstDropped != 5 && self.secondDropped != 5 && self.thirdDropped != 5 && self.fourthDropped != 5) {
+        else if self.drop5Dropped == false || self.isReplaceCandidate(dropSlot: 5) {
+            self.drop5Dropped = true
             self.mapView.removeAnnotation(self.drop5DropPin)
             self.mapView.remove(self.drop5Circle)
-            self.drop5Dropped = true
             self.drop5DropPin = CustomPinDrop(coordinate: coord, title: "Item")
             self.drop5Coordinates = coord
             self.mapView.addAnnotation(self.drop5DropPin)
             self.drop5Region = CLCircularRegion(center: coord, radius: CLLocationDistance(5), identifier: "")
             self.drop5Circle = MKCircle(center: coord, radius: CLLocationDistance(5))
             self.mapView.add(self.drop5Circle)
-            self.fourthDropped = self.thirdDropped
-            self.thirdDropped = self.secondDropped
-            self.secondDropped = self.firstDropped
-            self.firstDropped = 5
-            print("drop 5 dropped, lat \(lat) long \(long)")
+            self.updateDropOrder(droppedItem: 5)
         }
     }
     
@@ -3640,7 +3627,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             recipient = "defense"
         }
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "item_post", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: long, extra: "", timingOut: 999, completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "item_post", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: long, extra: "", timingOut: 10, completionHandler: { (didPost) -> Void in
         })
     }
     
@@ -3650,7 +3637,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             recipient = "defense"
         }
         SocketIOManager.sharedInstance.postGameEvent(
-            gameID: globalGameID, eventName: "item_unpost", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: 0, extra: "", timingOut: 999, completionHandler: { (didPost) -> Void in
+            gameID: globalGameID, eventName: "item_unpost", sender: localPlayerPosition, recipient: recipient, latitude: lat, longitude: 0, extra: "", timingOut: 25, completionHandler: { (didPost) -> Void in
         })
     }
     
