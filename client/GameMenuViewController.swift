@@ -11,6 +11,7 @@ import UIKit
 class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate {
 
     @IBOutlet var mapSwitch: UISwitch!
+    @IBOutlet var autoCameraSwitch: UISwitch!
     
     @IBOutlet var offense1Label: UILabel!
     @IBOutlet var offense2Label: UILabel!
@@ -79,13 +80,13 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
         self.mapSwitch.tintColor = UIColor(red:1.0,green:0.0,blue:0.0,alpha:1.0)
         self.mapSwitch.backgroundColor = UIColor(red:1.0,green:0.0,blue:0.0,alpha:1.0)
         self.mapSwitch.layer.cornerRadius = 16.0
+        self.autoCameraSwitch.tintColor = UIColor(red:1.0,green:0.0,blue:0.0,alpha:1.0)
+        self.autoCameraSwitch.backgroundColor = UIColor(red:1.0,green:0.0,blue:0.0,alpha:1.0)
+        self.autoCameraSwitch.layer.cornerRadius = 16.0
         
-        if map3d == false {
-            self.mapSwitch.isOn = false
-        }
-        if map3d == true {
-            self.mapSwitch.isOn = true
-        }
+        self.mapSwitch.isOn = map3d
+        self.autoCameraSwitch.isOn = autoCameraEnabled
+        // self.autoCameraSwitch.isEnabled = map3d
         
         //populate player names
         self.offense1Label.text = globalPlayerNamesDict["offense1"]!
@@ -109,13 +110,12 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
+    
     @IBAction func returnToGameButton(_ sender: AnyObject) {
-        
         map3d = self.mapSwitch.isOn
-        
+        autoCameraEnabled = self.autoCameraSwitch.isOn
         self.menuRefreshTimer.invalidate()
         self.dismiss(animated: true, completion: nil)
     }
@@ -140,6 +140,13 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
         }
     }
     
+    @IBAction func didSwitch3dMap(_ sender: Any) {
+//        self.autoCameraSwitch.isEnabled = self.mapSwitch.isOn
+//        if !self.mapSwitch.isOn {
+//            self.autoCameraSwitch.isOn = false
+//        }
+    }
+    
     @IBAction func setTestRadiusButton(_ sender: AnyObject) {
         testAnnCaption = testRadiusTextField.text!
         testAnnType = testTextField2.text!
@@ -149,13 +156,11 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
     
     //menu refresh timer
     func menuRefreshTimerUpdate() {
-        if(menuRefreshTimerCount > 0)
-        {
+        if menuRefreshTimerCount > 0 {
             menuRefreshTimerCount -= 1
         }
-        if(menuRefreshTimerCount == 0)
-        {
-           menuRefreshTimerCount = 4
+        if menuRefreshTimerCount == 0 {
+            menuRefreshTimerCount = 4
             self.updateStatus()
         }
     }
@@ -303,8 +308,6 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
             self.defense5Label2.text = ""
         }
         
-        //update status for local player
-        
         if globalIsOffense == true {
             if localPlayerPosition == "offense1" {
                 if localPlayerStatus == 1 {
@@ -419,7 +422,6 @@ class GameMenuViewController: UIViewController, UITextViewDelegate, UITextFieldD
             }
         }
     
-        //indicate which player has the flag
         if playerCapturingPoint == "offense1" {
             self.offense1Label2.text = "has flag"
         }

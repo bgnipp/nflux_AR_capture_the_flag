@@ -6595,6 +6595,9 @@ Cg
                             <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tSK-FG-tE5">
                                 <rect key="frame" x="347" y="452" width="51" height="31"/>
                                 <color key="onTintColor" red="0.20000000000000001" green="0.0" blue="0.74117647058823533" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <connections>
+                                    <action selector="didSwitch3dMap:" destination="hDu-gq-9gd" eventType="valueChanged" id="bUj-Ck-FQf"/>
+                                </connections>
                             </switch>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="off" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ABP-ed-9FY">
                                 <rect key="frame" x="305" y="456" width="28" height="21"/>
@@ -6885,7 +6888,7 @@ Cg
                             <constraint firstItem="dhw-NC-kX7" firstAttribute="bottom" secondItem="6kq-aL-SsT" secondAttribute="bottom" multiplier="0.24" id="SHS-Wv-pPg"/>
                             <constraint firstItem="zyR-F8-pmu" firstAttribute="centerY" secondItem="tSK-FG-tE5" secondAttribute="centerY" id="SVp-77-3ki"/>
                             <constraint firstItem="zyR-F8-pmu" firstAttribute="leading" secondItem="tSK-FG-tE5" secondAttribute="trailing" constant="6" id="TQ2-1o-mSk"/>
-                            <constraint firstItem="goZ-ZK-YMr" firstAttribute="centerX" secondItem="qfG-zT-N43" secondAttribute="centerX" multiplier="0.71" id="Tae-85-Gxi"/>
+                            <constraint firstItem="goZ-ZK-YMr" firstAttribute="centerX" secondItem="qfG-zT-N43" secondAttribute="centerX" multiplier="0.74" id="Tae-85-Gxi"/>
                             <constraint firstItem="eqd-A0-yDg" firstAttribute="leading" secondItem="h20-kT-ZjD" secondAttribute="leading" id="Ujr-oF-LrJ"/>
                             <constraint firstItem="DGO-95-TTO" firstAttribute="centerX" secondItem="zyO-Kf-Y0z" secondAttribute="centerX" id="VKg-rL-ib5"/>
                             <constraint firstItem="69q-PZ-mIk" firstAttribute="bottom" secondItem="6kq-aL-SsT" secondAttribute="bottom" id="VcV-DN-a3i"/>
@@ -6899,7 +6902,7 @@ Cg
                             <constraint firstItem="Cee-uw-2Yj" firstAttribute="centerX" secondItem="h20-kT-ZjD" secondAttribute="centerX" id="Xsn-2E-L39"/>
                             <constraint firstItem="cC8-hL-VhH" firstAttribute="leading" secondItem="h20-kT-ZjD" secondAttribute="leading" id="YAs-7p-15U"/>
                             <constraint firstItem="3Vn-gx-FEr" firstAttribute="top" secondItem="8ly-nC-blL" secondAttribute="bottom" constant="18" id="ZRb-xS-vOz"/>
-                            <constraint firstItem="VVk-hi-CbY" firstAttribute="leading" secondItem="qfG-zT-N43" secondAttribute="leadingMargin" constant="10" id="acf-7m-wS7"/>
+                            <constraint firstItem="VVk-hi-CbY" firstAttribute="leading" secondItem="qfG-zT-N43" secondAttribute="leadingMargin" constant="12" id="acf-7m-wS7"/>
                             <constraint firstItem="d3n-9y-eVV" firstAttribute="centerX" secondItem="zyO-Kf-Y0z" secondAttribute="centerX" id="bTR-vf-WOD"/>
                             <constraint firstAttribute="trailingMargin" secondItem="hHZ-aK-F79" secondAttribute="trailing" constant="1" id="bf9-Tp-uW2"/>
                             <constraint firstItem="Pky-GP-STm" firstAttribute="top" secondItem="8ly-nC-blL" secondAttribute="bottom" constant="8" id="cVJ-Om-oSe"/>
@@ -6992,6 +6995,7 @@ Cg
                         </variation>
                     </view>
                     <connections>
+                        <outlet property="autoCameraSwitch" destination="srb-g4-yFP" id="dWV-tO-APe"/>
                         <outlet property="defense1Label" destination="e59-HJ-r8Z" id="Xxn-jb-IvW"/>
                         <outlet property="defense1Label2" destination="cC8-hL-VhH" id="GsT-Th-VNu"/>
                         <outlet property="defense2Label" destination="hcj-gm-B0J" id="rem-iz-Yai"/>

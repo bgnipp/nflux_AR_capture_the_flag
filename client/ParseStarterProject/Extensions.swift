@@ -32,6 +32,7 @@ var globalCaptureTime = 10
 var globalItemsOn = true
 var globalGameLength = 0
 var globalTagThreshold = 0
+var autoCameraEnabled = true
 
 //item option globals
 var itemPricesOffense = [2,7,5,10,7,12,5,8,7,15,7,15]

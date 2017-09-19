@@ -86,7 +86,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var defenseRechargeTimerCount: Int = 10
     
     var mapViewCameraTimer = Timer()
-    var mapViewCameraTimerCount: Int = 10
+    var mapViewCameraTimerCount: Int = 15
     var cameraIsFollowing = true
     var deviceHeading = 0.0
     
@@ -151,6 +151,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var currentLatitude: CLLocationDegrees = 0
     var currentLongitude: CLLocationDegrees = 0
     var initialMapSetup = false
+    var didInitialZoom = false
     
     //current region, 0 = neutral, 1 = base region, 2 = point region
     var localPlayerRegion: Int = 0
@@ -436,7 +437,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var itemTimer = Timer()
     var itemTimerCount: Int = STATE_TIMER_INTERVAL
     
-    var cameraPitch = 0.0
     let motionManager = CMMotionManager()
     
     //beacon emitter variables
@@ -628,23 +628,23 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         super.viewDidAppear(animated)
         motionManager.deviceMotionUpdateInterval = 0.05
         motionManager.startDeviceMotionUpdates()
-        
         if globalTestModeEnabled == true && testViewHidden == false {
             self.hideTestView(false)
         }
         else if globalTestModeEnabled == true && testViewHidden == true {
             self.hideTestView(true)
         }
-        
+        if autoCameraEnabled {
+            headingImageView?.isHidden = true
+        }
         if initialMapSetup == false {
             self.initialMapSetup = true
             setInitialCameraOrientation()
+        } else if autoCameraEnabled {
+            self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
+        } else {
+            self.mapView.setUserTrackingMode(MKUserTrackingMode.none, animated: true)
         }
-//        else {
-//            let pitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180 / Double.pi
-//            self.setCameraOrientation(pitch: pitch, fromDistance: self.mapView.camera.altitude)
-//        }
-        
         if quittingGame == true {
             self.quitGame()
         }
@@ -1354,63 +1354,54 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             default: return
         }
     }
-    
-//    func alignCameraAndDevicePitch() {
-//        let devicePitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180 / Double.pi
-//        self.cameraPitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180 / Double.pi
-//        self.mapCamera = MKMapCamera(lookingAtCenter:  CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 400, pitch: CGFloat(self.cameraPitch), heading: (self.locationManager.heading?.trueHeading)!)//self.mapView.camera.heading)
-//        self.mapView.setCamera(self.mapCamera, animated: true)
-//    }
-    
-    func setCameraOrientation(pitch: Double, fromDistance: Double) {
-        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: fromDistance, pitch: CGFloat(pitch), heading: (self.locationManager.heading?.trueHeading)!)
-        self.mapView.setCamera(self.mapCamera, animated: true)
-        //self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
-    }
-    
-    func alignCameraHeading() {
-        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: self.mapView.camera.altitude, pitch: self.mapView.camera.pitch, heading: (self.locationManager.heading?.trueHeading)!)
-        self.mapView.setCamera(self.mapCamera, animated: true)
-    }
-    
-    
-    func mapViewCameraTimerUpdate() {
-        self.updateHeadingAnnotationRotation()
-        self.mapViewCameraTimerCount -= 1
-        if cameraIsFollowing && self.mapViewCameraTimerCount < 0 {
-            self.mapViewCameraTimerCount = 5
-            let devicePitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180  / Double.pi
-            let deviceHeadingDeltaSinceLastFrame = abs(deviceHeading - (self.locationManager.heading?.trueHeading)!)
-            self.deviceHeading = (self.locationManager.heading?.trueHeading)!
-            let cameraHeading = self.mapView.camera.heading
-            let headingDelta = abs(deviceHeading - cameraHeading)
-            if devicePitch < 20 && self.mapView.camera.pitch > 20 {
-                self.setCameraOrientation(pitch: 0, fromDistance: 500)
-            } else if devicePitch > 70 && self.mapView.camera.pitch < 70{
-                self.setCameraOrientation(pitch: 70, fromDistance: 300)
-            } else if headingDelta > 20 && deviceHeadingDeltaSinceLastFrame < 5 {
-                var fromDistance = 300.0
-                if devicePitch <= 45 {
-                    fromDistance = 500.0
-                }
-                self.setCameraOrientation(pitch: devicePitch, fromDistance: fromDistance)
-            }
-        }
+    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
+        print("yodoggydoggy")
     }
     
     func setInitialCameraOrientation() {
-        self.setCameraOrientation(pitch: 70, fromDistance: 400.0)
-        self.mapViewCameraTimerCount = 5
-        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 400, pitch: 25, heading: 0)
+        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 1500, pitch: 25, heading: 0)
         self.mapView.setCamera(self.mapCamera, animated: false)
+        self.mapViewCameraTimerCount = 25
         self.mapViewCameraTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(GameViewController.mapViewCameraTimerUpdate), userInfo: nil, repeats: true)
         self.mapViewCameraTimer.tolerance = 0.3
     }
     
+    func setCameraOrientation(pitch: Double, fromDistance: Double) {
+        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: fromDistance, pitch: CGFloat(pitch), heading: (self.locationManager.heading?.trueHeading)!)
+        self.mapView.setCamera(self.mapCamera, animated: true)
+        self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
+    }
+    
+    func mapViewCameraTimerUpdate() {
+        if autoCameraEnabled {
+            if self.mapViewCameraTimerCount > 0 {
+                self.mapViewCameraTimerCount -= 1
+            } else if cameraIsFollowing && self.didInitialZoom {
+                let devicePitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180  / Double.pi
+                if devicePitch < 20 && self.mapView.camera.pitch > 20 {
+                    self.setCameraOrientation(pitch: 0, fromDistance: 500)
+                    self.mapViewCameraTimerCount = 7
+                } else if devicePitch > 70 && self.mapView.camera.pitch < 70 {
+                    self.setCameraOrientation(pitch: 70, fromDistance: 300)
+                    self.mapViewCameraTimerCount = 7
+                }
+            } else if self.didInitialZoom {
+                self.mapViewCameraTimerCount = 7
+            } else if self.mapView.camera.altitude < 1400 {
+                self.didInitialZoom = true
+                self.mapViewCameraTimerCount = 7
+                self.setCameraOrientation(pitch: 25, fromDistance: 500)
+            }
+        }
+//        else {
+//            self.updateHeadingAnnotationRotation()
+//        }
+    }
+    
     @IBAction func testButton(_ sender: AnyObject) {
+        self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
         if globalIsOffense == true && (localPlayerStatus == 2 || localPlayerStatus == 0) {
             localPlayerStatus = 1
-            
             self.alertIconImageView.isHidden = true
             self.iconLabel.isHidden = true
             self.lifeMeterImageView.isHidden = false
@@ -1979,13 +1970,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let location:CLLocationCoordinate2D = manager.location!.coordinate
         self.currentLatitude = location.latitude
         self.currentLongitude = location.longitude
-//        //set up 3d map camera
-//        if initialMapSetup == false {
-//            self.initialMapSetup = true
-//            let center = CLLocationCoordinate2D(latitude: location.latitude, longitude: location.longitude)
-//            self.mapCamera = MKMapCamera(lookingAtCenter: center, fromDistance: 400, pitch: 25, heading: 15)//(self.locationManager.heading?.trueHeading)!)
-//            self.mapView.setCamera(self.mapCamera, animated: false)
-//        }
     }
 
     //beacon detection func
@@ -2134,8 +2118,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         headingImageView?.isHidden = false
         let heading = self.locationManager.heading?.trueHeading
         let rotation = CGFloat(heading! * .pi / 180)
-        print("HEADING: ", heading)
-        print ("ROTATION: ", rotation)
         headingImageView?.transform = CGAffineTransform(rotationAngle: rotation)
     }
     
