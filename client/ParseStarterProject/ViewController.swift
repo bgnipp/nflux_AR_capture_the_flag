@@ -47,6 +47,11 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
             let lat = currentLocation.coordinate.latitude
             let long = currentLocation.coordinate.longitude
             globalUserName = userName.text!
+            if globalUserName == "p" {
+                globalTestModeEnabled = true
+            } else {
+                globalTestModeEnabled = false
+            }
             globalIsOffense = offenseTrueSwitch.isOn
             SocketIOManager.sharedInstance.socket.emitWithAck("enterQueue", globalUserName, globalIsOffense, UDID, lat, long).timingOut(after: 3) {game in
                 if game[0] as? String == "rejoining" {

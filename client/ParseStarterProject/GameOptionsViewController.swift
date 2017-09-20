@@ -370,7 +370,7 @@ class GameOptionsViewController: UIViewController, UITextViewDelegate, UITextFie
                                                            gameLength: Int(String(timePickerSelect.characters.dropLast(3)))! * 60,
                                                            captureTime: globalCaptureTime,
                                                            itemsEnabled: globalItemsOn,
-                                                           testModeEnabled: devMode,
+                                                           testModeEnabled: globalTestModeEnabled,
                                                            completionHandler: { (canProceed) -> Void in
                 if canProceed {
                     self.gameOptionsSystemTimer.invalidate()

@@ -86,9 +86,10 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     var defenseRechargeTimerCount: Int = 10
     
     var mapViewCameraTimer = Timer()
-    var mapViewCameraTimerCount: Int = 15
-    var cameraIsFollowing = true
+    var mapViewCameraTimerCount: Int = 0
+    var mapView2DTrackingCount: Int = 0
     var deviceHeading = 0.0
+    var inItemView = false
     
     //temp (for video creaetion purposes)
     var tempdropcircle = MKCircle()
@@ -612,7 +613,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if devMode == false {
+        if globalTestModeEnabled == false {
             self.hideTestView(true)
         }
         if map3d == true {
@@ -1354,15 +1355,12 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             default: return
         }
     }
-    func mapViewDidFinishLoadingMap(_ mapView: MKMapView) {
-        print("yodoggydoggy")
-    }
     
     func setInitialCameraOrientation() {
-        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 1500, pitch: 25, heading: 0)
+        self.mapCamera = MKMapCamera(lookingAtCenter: CLLocationCoordinate2D(latitude: self.currentLatitude, longitude: self.currentLongitude), fromDistance: 1500, pitch: 0, heading: 0)
         self.mapView.setCamera(self.mapCamera, animated: false)
-        self.mapViewCameraTimerCount = 25
-        self.mapViewCameraTimer = Timer.scheduledTimer(timeInterval: 0.2, target: self, selector: #selector(GameViewController.mapViewCameraTimerUpdate), userInfo: nil, repeats: true)
+        self.mapViewCameraTimerCount = 9
+        self.mapViewCameraTimer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(GameViewController.mapViewCameraTimerUpdate), userInfo: nil, repeats: true)
         self.mapViewCameraTimer.tolerance = 0.3
     }
     
@@ -1373,24 +1371,33 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func mapViewCameraTimerUpdate() {
-        if autoCameraEnabled {
+        if self.inItemView {
+            return
+        }
+        if autoCameraEnabled && map3d {
             if self.mapViewCameraTimerCount > 0 {
                 self.mapViewCameraTimerCount -= 1
-            } else if cameraIsFollowing && self.didInitialZoom {
+            } else if self.didInitialZoom {
                 let devicePitch = (self.motionManager.deviceMotion?.attitude.pitch)! * 180  / Double.pi
                 if devicePitch < 20 && self.mapView.camera.pitch > 20 {
                     self.setCameraOrientation(pitch: 0, fromDistance: 500)
-                    self.mapViewCameraTimerCount = 7
-                } else if devicePitch > 70 && self.mapView.camera.pitch < 70 {
+                    self.mapViewCameraTimerCount = 6
+                } else if devicePitch > 65 && self.mapView.camera.pitch < 65 {
                     self.setCameraOrientation(pitch: 70, fromDistance: 300)
-                    self.mapViewCameraTimerCount = 7
+                    self.mapViewCameraTimerCount = 6
                 }
-            } else if self.didInitialZoom {
-                self.mapViewCameraTimerCount = 7
-            } else if self.mapView.camera.altitude < 1400 {
+            } else if self.mapView.camera.altitude < 1200 {
                 self.didInitialZoom = true
-                self.mapViewCameraTimerCount = 7
-                self.setCameraOrientation(pitch: 25, fromDistance: 500)
+                self.mapViewCameraTimerCount = 6
+                self.setCameraOrientation(pitch: 35, fromDistance: 400)
+            }
+            return
+        } else if autoCameraEnabled {
+            if self.mapView2DTrackingCount > 0 {
+                self.mapView2DTrackingCount -= 1
+            } else if !self.inItemView {
+                self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
+                self.mapView2DTrackingCount = 30
             }
         }
 //        else {
@@ -1398,8 +1405,22 @@ class GameViewController: UIViewController, MKMapViewDelegate {
 //        }
     }
     
+    func enterItemMapView() {
+        self.inItemView = true
+        mapView.isPitchEnabled = false
+        mapView.isZoomEnabled = false
+    }
+    
+    func exitItemMapView() {
+        self.inItemView = false
+        mapView.isPitchEnabled = true
+        mapView.isZoomEnabled = true
+        if autoCameraEnabled {
+            self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
+        }
+    }
+    
     @IBAction func testButton(_ sender: AnyObject) {
-        self.mapView.setUserTrackingMode(MKUserTrackingMode.followWithHeading, animated: true)
         if globalIsOffense == true && (localPlayerStatus == 2 || localPlayerStatus == 0) {
             localPlayerStatus = 1
             self.alertIconImageView.isHidden = true
@@ -1565,13 +1586,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let distanceFromPlayer = CLLocation(latitude: self.currentLatitude, longitude: self.currentLongitude).distance(from: CLLocation(latitude: screenCoordinate.latitude, longitude: screenCoordinate.longitude))
         if self.baseRegion.contains(screenCoordinate) == true || self.pointRegion.contains(screenCoordinate) == true {
             displayAlert("Error", message: "You can't plant a mine in the base or flag regions")
-            mapView.isPitchEnabled = false
-            mapView.isZoomEnabled = false
+            self.enterItemMapView()
         }
         else if distanceFromPlayer > 20 {
             displayAlert("Error", message: "Must plant within 20 meters of your current location")
-            mapView.isPitchEnabled = false
-            mapView.isZoomEnabled = false
+            self.enterItemMapView()
         }
         else if self.mine1Dropped == true && self.mine2Dropped == true && self.mine3Dropped == true {
             let refreshAlert = UIAlertController(title: "Mine limit reached", message: "You can't plant more than three mines at once, exchange mine for money?", preferredStyle: UIAlertControllerStyle.alert)
@@ -1632,8 +1651,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let screenCoordinate = mapView.centerCoordinate
         if self.pointRegion.contains(screenCoordinate) == true {
             displayAlert("Error", message: "You can't drop a bomb in the flag zone")
-            mapView.isPitchEnabled = false
-            mapView.isZoomEnabled = false
+            self.enterItemMapView()
         }
         else {
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
@@ -1915,8 +1933,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     @IBAction func useButton(_ sender: AnyObject) {
-        mapView.isPitchEnabled = true
-        mapView.isZoomEnabled = true
+        self.exitItemMapView()
         switch self.activePowerup {
             case 1: self.useScan()
             case 2: self.useSuperScan()
@@ -1944,8 +1961,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     @IBAction func cancelButton(_ sender: AnyObject) {
         self.hideItemView()
-        mapView.isPitchEnabled = true
-        mapView.isZoomEnabled = true
+        self.exitItemMapView()
         self.backsound?.play()
     }
 
@@ -3063,8 +3079,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         self.useButtonOutlet.isHidden = false
         self.helpButtonOutlet.isHidden = false
         self.cancelButtonOutlet.isHidden = false
-        mapView.isPitchEnabled = true
-        mapView.isZoomEnabled = true
+        self.exitItemMapView()
     }
     
     func hideItemView() {
@@ -3083,8 +3098,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let center = mapView.camera.centerCoordinate
         let mapCamera2 = MKMapCamera(lookingAtCenter: center, fromDistance: 225, pitch: 0, heading: (self.locationManager.heading?.trueHeading)!)
         self.mapView.setCamera(mapCamera2, animated: true)
-        mapView.isPitchEnabled = false
-        mapView.isZoomEnabled = false
+        self.enterItemMapView()
         self.targetImageView.image = UIImage(named:"target.png")
         self.itemViewHidden = false
         self.targetImageView.isHidden = false
@@ -3102,8 +3116,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let heading = mapView.camera.heading
         let mapCamera2 = MKMapCamera(lookingAtCenter: center, fromDistance: 225, pitch: 0, heading: (self.locationManager.heading?.trueHeading)!)
         self.mapView.setCamera(mapCamera2, animated: true)
-        mapView.isPitchEnabled = false
-        mapView.isZoomEnabled = false
+        self.enterItemMapView()
         self.targetImageView.image = UIImage(named:"radar.png")
         self.itemViewHidden = false
         self.targetImageView.isHidden = false
@@ -3121,8 +3134,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         let heading = mapView.camera.heading
         let mapCamera2 = MKMapCamera(lookingAtCenter: center, fromDistance: 225, pitch: 0, heading: (self.locationManager.heading?.trueHeading)!)
         self.mapView.setCamera(mapCamera2, animated: true)
-        mapView.isPitchEnabled = false
-        mapView.isZoomEnabled = false
+        self.enterItemMapView()
         self.targetImageView.image = UIImage(named:"spybotoverlay.png")
         self.itemViewHidden = false
         self.targetImageView.isHidden = false
@@ -3135,8 +3147,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func clearAfterUse() {
-        mapView.isPitchEnabled = true
-        mapView.isZoomEnabled = true
+        self.exitItemMapView()
         self.itemViewHidden = true
         self.targetImageView.isHidden = true
         self.itemButtonBackdropImageView.isHidden = true
@@ -4345,7 +4356,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func stateUpdate() {
-        if bluetoothOn == false  && localPlayerStatus == 1 && devMode == false {
+        if bluetoothOn == false  && localPlayerStatus == 1 && globalTestModeEnabled == false {
             self.tagLocalPlayer()
             self.logicLoseLife?.play()
             displayAlert("Bluetooth disabled", message: "You automatically get tagged when you disable bluetooth! Enable bluetooth to continue playing. Make sure airplane mode is disabled.")

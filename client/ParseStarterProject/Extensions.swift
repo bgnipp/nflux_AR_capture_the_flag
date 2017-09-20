@@ -12,7 +12,6 @@ import CoreBluetooth
 
 //dev stuff
 var globalTestModeEnabled = false
-var devMode = true
 var testViewHidden = true
 var testAnnType = ""
 var testAnnCaption = ""
@@ -32,6 +31,7 @@ var globalCaptureTime = 10
 var globalItemsOn = true
 var globalGameLength = 0
 var globalTagThreshold = 0
+var map3d = true
 var autoCameraEnabled = true
 
 //item option globals
@@ -68,7 +68,6 @@ var slot1Powerup = 0
 var slot2Powerup = 0
 var slot3Powerup = 0
 var currentFunds = 0
-var map3d = true
 var quittingGame = false
 var eventsArray = [String]()
 var gameTimerCount: Int = 1500
@@ -85,7 +84,7 @@ extension UIViewController: CLLocationManagerDelegate, CBPeripheralManagerDelega
             displayAlert("No internet connection", message: "nFlux requires an active internet/data connection.  Make sure airplane mode on your phone is OFF, and that you have an active data plan.")
             return false
         }
-        else if bluetoothOn == false && devMode == false  {
+        else if bluetoothOn == false && globalTestModeEnabled == false  {
             displayAlert("Bluetooth disabled", message: "nFlux requires bluetooth in order to determine when players get tagged by opponents. Make sure airplane mode on your phone is OFF, and that bluetooth is enabled and authorized.")
             return false
         }
