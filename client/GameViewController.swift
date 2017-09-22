@@ -694,9 +694,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                     }
                     if playersTaggedByMine > 1 {
                         self.logEvent("Mine triggered on \(playersTaggedByMine) opponents!")
+                        playerTagCount += playersTaggedByMine
                     }
                     else if playersTaggedByMine == 1 {
                         self.logEvent("Mine triggered on \(playerTaggedByMine)")
+                        playerTagCount += 1
                     }
                     else if playersTaggedByMine == 0 {
                         self.logEvent("Mine tripped by tagged player!")
@@ -1081,7 +1083,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         } else if bomber != localPlayerPosition {
             self.bombtag?.play()
             AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
-            self.logEvent("\(bomber) bombed \(bombRecipientNickname)!")
+            self.logEvent("\(bomberNickname) bombed \(bombRecipientNickname)!")
         }
     }
     
@@ -1260,13 +1262,16 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     
     func processRegularTagEvent(gameEvent: [String: Any]) {
         let tagee = gameEvent["sender"] as! String
+        print(gameEvent)
         if tagee != localPlayerPosition {
             let tageeNickname = globalPlayerNamesDict[tagee]!
+            print("a")
             let tageeTeam = tagee.substring(to:tagee.index(tagee.startIndex, offsetBy: 7))
             let localPlayerTeam = localPlayerPosition.substring(to:localPlayerPosition.index(localPlayerPosition.startIndex, offsetBy: 7))
             let tagger = gameEvent["recipient"] as! String
             let taggerNickname = globalPlayerNamesDict[tagger]!
             var logString = ""
+            print("b")
             if tagger == localPlayerPosition {
                 logString = "You tagged \(tageeNickname)!"
                 playerTagCount += 1
@@ -1740,9 +1745,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 }
                 if playersTaggedByBomb > 1 {
                     self.logEvent("Bomb tagged \(playersTaggedByBomb) players!")
+                    playerTagCount += playersTaggedByBomb
                 }
                 else if playerTaggedByBomb != "" {
                     self.logEvent("Bomb tagged \(playerTaggedByBomb)!")
+                    playerTagCount += 1
                 }
                 else {
                     self.logEvent("Bomb missed")
@@ -1898,6 +1905,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             sickleHit = false
         }
         if sickleHit == true {
+            playerTagCount += 1
             SocketIOManager.sharedInstance.postGameEvent(
                 gameID: globalGameID, eventName: "sickle", sender: localPlayerPosition, recipient: "offense\(closestOpponent)", latitude: 0, longitude: 0, extra: "", completionHandler: { (didPost) -> Void in
             })
@@ -1913,18 +1921,33 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         })
         if globalPlayerNamesDict["defense1"]! != "" {
             self.revealTagee(globalPlayerNamesDict["defense1"]!)
+            if playerStateDict["defense1"]!["status"] as! Int == 1 {
+                playerTagCount += 1
+            }
         }
         if globalPlayerNamesDict["defense2"]! != "" {
             self.revealTagee(globalPlayerNamesDict["defense2"]!)
+            if playerStateDict["defense2"]!["status"] as! Int == 1 {
+                playerTagCount += 1
+            }
         }
         if globalPlayerNamesDict["defense3"]! != "" {
             self.revealTagee(globalPlayerNamesDict["defense3"]!)
+            if playerStateDict["defense3"]!["status"] as! Int == 1 {
+                playerTagCount += 1
+            }
         }
         if globalPlayerNamesDict["defense4"]! != "" {
             self.revealTagee(globalPlayerNamesDict["defense4"]!)
+            if playerStateDict["defense4"]!["status"] as! Int == 1 {
+                playerTagCount += 1
+            }
         }
         if globalPlayerNamesDict["defense5"]! != "" {
             self.revealTagee(globalPlayerNamesDict["defense5"]!)
+            if playerStateDict["defense5"]!["status"] as! Int == 1 {
+                playerTagCount += 1
+            }
         }
         self.logEvent("Lightning tagged all opponents!")
         self.lightningScan()
@@ -2026,31 +2049,37 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         //check to see if "tagged" (threshold exceeded), and if so vibrate, play sound, and reset current RSSI value to a high number as a "cool down" timer
                 if localPlayerStatus == 1 && (closestBeacon.minor == 5766 || closestBeacon.minor == 5767 || closestBeacon.minor == 5768 || closestBeacon.minor == 5769 || closestBeacon.minor == 5760 || closestBeacon.minor == 33826) && (currentRSSI1 > globalTagThreshold || (self.reachCount > 0 && currentRSSI1 > (globalTagThreshold - 6)  && Int(closestBeacon.minor) == self.reachPlayer)) {
                     var tagger = ""
+                    var taggerPosition = ""
                     if self.shieldLevel == 0 {
                         if closestBeacon.minor == 5766 {
                             self.localPlayerTaggedBy = "defense1"
                             self.logEvent("Tagged by \(globalPlayerNamesDict["defense1"]!)!")
                             tagger = globalPlayerNamesDict["defense1"]!
+                            taggerPosition = "defense1"
                         }
                         if closestBeacon.minor == 5767 {
                             self.localPlayerTaggedBy = "defense2"
                             self.logEvent("Tagged by \(globalPlayerNamesDict["defense2"]!)!")
                             tagger = globalPlayerNamesDict["defense2"]!
+                            taggerPosition = "defense2"
                         }
                         if closestBeacon.minor == 5768 {
                             self.localPlayerTaggedBy = "defense3"
                             self.logEvent("Tagged by \(globalPlayerNamesDict["defense3"]!)!")
                             tagger = globalPlayerNamesDict["defense3"]!
+                            taggerPosition = "defense3"
                         }
                         if closestBeacon.minor == 5769 {
                             self.localPlayerTaggedBy = "defense4"
                             self.logEvent("Tagged by \(globalPlayerNamesDict["defense4"]!)!")
                             tagger = globalPlayerNamesDict["defense4"]!
+                            taggerPosition = "defense4"
                         }
                         if closestBeacon.minor == 5760 {
                             self.localPlayerTaggedBy = "defense5"
                             self.logEvent("Tagged by \(globalPlayerNamesDict["defense5"]!)!")
                             tagger = globalPlayerNamesDict["defense5"]!
+                            taggerPosition = "defense5"
                         }
                         if closestBeacon.minor == 33826 {
                             self.localPlayerTaggedBy = "beacon"
@@ -2060,7 +2089,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.tagLocalPlayer()
                         self.logicLoseLife?.play()
                         SocketIOManager.sharedInstance.postGameEvent(
-                            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: tagger, latitude: 0, longitude: 0, extra: "reg", timingOut: 99, completionHandler: { (didPost) -> Void in
+                            gameID: globalGameID, eventName: "tag", sender: localPlayerPosition, recipient: taggerPosition, latitude: 0, longitude: 0, extra: "reg", timingOut: 99, completionHandler: { (didPost) -> Void in
                         })
                     }
                     else {
@@ -2318,6 +2347,9 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     }
     
     func itemStateUpdate() {
+        
+        self.checkForMineTag()
+        
         if self.jammerCount > 0 {
             self.jammerCount += 1
             if self.jammerCount == JAMMER_DURATION {

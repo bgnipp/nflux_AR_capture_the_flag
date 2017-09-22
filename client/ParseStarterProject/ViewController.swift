@@ -33,6 +33,12 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
     @IBOutlet var nstructionsOutlet: UIButton!
     
     @IBAction func letsPlay(_ sender: AnyObject) {
+        globalUserName = userName.text!
+        if globalUserName == "p" || globalUserName == "q" || globalUserName == "r" || globalUserName == "s" {
+            globalTestModeEnabled = true
+        } else {
+            globalTestModeEnabled = false
+        }
         if checkIsConnected() == false {
             print("not connected")
         }
@@ -46,12 +52,6 @@ class ViewController: UIViewController, UITextViewDelegate, UITextFieldDelegate 
             currentLocation = locManager.location
             let lat = currentLocation.coordinate.latitude
             let long = currentLocation.coordinate.longitude
-            globalUserName = userName.text!
-            if globalUserName == "p" {
-                globalTestModeEnabled = true
-            } else {
-                globalTestModeEnabled = false
-            }
             globalIsOffense = offenseTrueSwitch.isOn
             SocketIOManager.sharedInstance.socket.emitWithAck("enterQueue", globalUserName, globalIsOffense, UDID, lat, long).timingOut(after: 3) {game in
                 if game[0] as? String == "rejoining" {
