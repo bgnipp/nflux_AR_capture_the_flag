@@ -288,6 +288,17 @@ def handle_message(
 		extra
 	):
 	print("game event: ", "sender: ", sender, " event: ", event_name)
+
+	if (
+		event_name == 'tag' and games[game_id]['point_state']['capturer'] == sender
+		or ( 
+			event_name in ('mine_tag', 'bomb', 'sickle')
+			and games[game_id]['point_state']['capturer'] == recipient
+		)
+		or event_name == 'lightning'
+	):
+		games[game_id]['point_state']['capture_state'] = ''
+		games[game_id]['point_state']['capturer'] = ''
 	if event_name == 'capturing':
 		if games[game_id]['point_state']['capturer'] != '':
 			return False
