@@ -1300,6 +1300,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     func processOtherPlayerCapturingPointEvent(gameEvent: [String: Any]) {
         pointCaptureState = "capturing"
         playerCapturingPoint = gameEvent["sender"] as! String
+        self.updateFlagState()
         if playerCapturingPoint != localPlayerPosition {
             if !globalIsOffense {
                 if localPlayerStatus == 1 {
@@ -1315,6 +1316,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
     func processOtherPlayerCapturedPointEvent(gameEvent: [String: Any]) {
         pointCaptureState = "captured"
         playerCapturingPoint = gameEvent["sender"] as! String
+        self.updateFlagState()
         if playerCapturingPoint != localPlayerPosition {
             let capturerNickname = globalPlayerNamesDict[playerCapturingPoint]!
             self.logEvent("\(capturerNickname) captured the flag!")
@@ -1444,8 +1446,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             if playerCapturingPoint == "" {
                 self.alertIconImageView.image = UIImage(named:"greenIcon.png")
                 self.iconLabel.text = "Flag in place"
-            }
-            if playerCapturingPoint != "" {
+            } else {
                 self.alertIconImageView.image = UIImage(named:"warningIcon.png")
                 self.iconLabel.text = "Flag captured!"
             }
@@ -2454,7 +2455,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                             pointCaptureState = "captured"
                             self.updateFlagState()
                             playerCapturingPoint = localPlayerPosition
-                            self.flagImageView.isHidden = false // show flag in top right of capturer's screen
                             self.logEvent("Captured the flag! Get back to base")
                             self.captureTimer.invalidate()
                             self.logicCapturing2?.stop()
@@ -2523,8 +2523,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             if playerCapturingPoint == "" {
                 self.alertIconImageView.image = UIImage(named:"greenIcon.png")
                 self.iconLabel.text = "Flag in place"
-            }
-            if playerCapturingPoint != "" {
+            } else {
                 self.alertIconImageView.image = UIImage(named:"warningIcon.png")
                 self.iconLabel.text = "Flag captured!"
             }
@@ -2591,6 +2590,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         self.tagTimerCount = 1
         self.tagTimer = Timer.scheduledTimer(timeInterval: 0.3, target: self, selector: #selector(GameViewController.tagTimerUpdate), userInfo: nil, repeats: true)
         self.tagTimer.tolerance = 0.3
+        self.updateFlagState()
         if globalIsOffense {
             if playerCapturingPoint == localPlayerPosition {
                 playerCapturingPoint = ""
@@ -2600,7 +2600,6 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             self.logicCapturing2?.stop()
             self.logicCapturing2?.currentTime = 0
             self.captureTimer.invalidate()
-            self.flagImageView.isHidden = true
         } else {
             self.alertIconImageView.image = UIImage(named:"walkIcon.png")
             self.iconLabel.text = "Return to base"
@@ -3369,22 +3368,22 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         }
         if globalIsOffense == false {
             if roll >= 30 && roll <= 32 {
-                if itemsDisabled[12] == false {
+                if itemsDisabled[8] == false {
                     placeItem(13) }
                 else { genItem() }
             }
             if roll >= 33 && roll <= 35 {
-                if itemsDisabled[13] == false {
+                if itemsDisabled[9] == false {
                     placeItem(14) }
                 else { genItem() }
             }
             if roll >= 36 && roll <= 37 {
-                if itemsDisabled[14] == false {
+                if itemsDisabled[10] == false {
                     placeItem(15) }
                 else { genItem() }
             }
             if roll == 38 {
-                if itemsDisabled[15] == false {
+                if itemsDisabled[11] == false {
                     placeItem(16) }
                 else { genItem() }
             }
@@ -4630,7 +4629,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                         self.displayAlert("Error", message: "You were unable to capture the flag.  Please make sure you have an active network connection.")
                     }
                 })
-            } else if pointCaptureState == "capturing" && playerCapturingPoint != localPlayerPosition && self.eventsLabel.text != "Flag not in base.."  {
+            } else if pointCaptureState == "capturing" && playerCapturingPoint != localPlayerPosition && self.eventsLabel.text != "Flag not in base.." && localPlayerStatus == 1 {
                 self.logEvent("Flag not in base..")
                 AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
                 self.logicReign?.play()
@@ -4905,8 +4904,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
             if playerCapturingPoint == "" {
                 self.alertIconImageView.image = UIImage(named:"greenIcon.png")
                 self.iconLabel.text = "Flag in place"
-            }
-            if playerCapturingPoint != "" {
+            } else {
                 self.alertIconImageView.image = UIImage(named:"warningIcon.png")
                 self.iconLabel.text = "Flag captured!"
             }
@@ -4924,8 +4922,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 if playerCapturingPoint == "" {
                     self.alertIconImageView.image = UIImage(named:"greenIcon.png")
                     self.iconLabel.text = "Flag in place"
-                }
-                if playerCapturingPoint != "" {
+                } else {
                     self.alertIconImageView.image = UIImage(named:"warningIcon.png")
                     self.iconLabel.text = "Flag captured!"
                 }
@@ -4958,8 +4955,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
                 if playerCapturingPoint == "" {
                     self.alertIconImageView.image = UIImage(named:"greenIcon.png")
                     self.iconLabel.text = "Flag in place"
-                }
-                if playerCapturingPoint != "" {
+                } else {
                     self.alertIconImageView.image = UIImage(named:"warningIcon.png")
                     self.iconLabel.text = "Flag captured!"
                 }
@@ -5145,9 +5141,11 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         if pointCaptureState == "" {
             //self.pointDropPin = CustomPin(coordinate: self.pointCoordinates, title: "Flag", subtitle: "Not captured")
             self.mapView.addAnnotation(self.pointDropPin)
+            self.flagImageView.isHidden = true
         }
         else if pointCaptureState == "captured" {
             self.mapView.removeAnnotation(self.pointDropPin)
+            self.flagImageView.isHidden = false
         }
     }
     
