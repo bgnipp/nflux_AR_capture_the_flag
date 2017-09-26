@@ -5,6 +5,7 @@ import time
 import threading
 
 games = {}
+log = open('nflux_log.txt', 'a+')
 
 def is_rejoining_game(udid):
 	for game_id in games:
@@ -14,10 +15,8 @@ def is_rejoining_game(udid):
 	return False
 
 def register_user(user_name, is_offense, udid, sid, latitude, longitude):
-	print("games:")
-	print(games)
+	print("player connected: ", user_name)
 	for game_id in games:
-		print('joining existing queued game')
 		if (abs(latitude - games[game_id]['latitude']) < .005 
 			and abs(longitude - games[game_id]['longitude']) < .005):
 			print("joining existing game")
@@ -60,14 +59,11 @@ def register_user(user_name, is_offense, udid, sid, latitude, longitude):
 
 @socketio.on('enterQueue')
 def handle_message(user_name, is_offense, udid, latitude, longitude):
-	print('connect user ' + str(user_name) + ' ' + str(is_offense) + ' ' + str(latitude) + ' ' + str(longitude) + ' ' + str(udid))
 	rejoining_game_id = is_rejoining_game(udid)
 	if rejoining_game_id:
 		join_room(rejoining_game_id)
 		current_timer_count = int(5 + games[rejoining_game_id]['config']['game_length'] \
 			- (time.time() - games[rejoining_game_id]['start_time']))
-		print('REJOINING GAME, game_id: ', rejoining_game_id, ' current timer count: ', current_timer_count)
-		print("THE REST: \n", games[rejoining_game_id]['config'], games[rejoining_game_id]['players_pos'], current_timer_count)
 		return 'rejoining', rejoining_game_id, games[rejoining_game_id]['config'], \
 			games[rejoining_game_id]['players_pos'], current_timer_count
 	game_id = register_user(user_name, is_offense, udid, request.sid, latitude, longitude)
@@ -77,7 +73,6 @@ def handle_message(user_name, is_offense, udid, latitude, longitude):
 @socketio.on('leaveGame')
 def handle_message(game_id, udid):
 	del games[game_id]['players_udid'][udid]
-	print(udid, ' left game ', game_id)
 	emit('updateWaitingUsers', games[game_id]['players_udid'], room=game_id, broadcast=True)
 
 @socketio.on('postHeartbeat')
@@ -288,7 +283,6 @@ def handle_message(
 		extra
 	):
 	print("game event: ", "sender: ", sender, " event: ", event_name)
-
 	if (
 		event_name == 'tag' and games[game_id]['point_state']['capturer'] == sender
 		or ( 
@@ -331,10 +325,12 @@ def handle_message(game_id, position):
 		games[game_id]['point_state']['heartbeat'] = time.time()
 
 def timedLoop():
-	print("timed loop fired, GAMES: ", games)
-	# delete inactive games
+	print("timed loop fired, active GAMES: ")
 	del_games = []
 	for game_id in games:
+		print('  ' + game_id)
+		with open('nflux_log.txt', 'a+') as f:
+			f.write(str(game_id) + '\t' + str(games[game_id]) + '\n')
 		idle_time = time.time() - games[game_id]['heartbeat']
 		if idle_time > 20:
 			print("Deleting inactive game ", game_id)
