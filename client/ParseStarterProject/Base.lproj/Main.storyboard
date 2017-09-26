@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
         <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
         <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="Constraints with non-1.0 multipliers" minToolsVersion="5.1"/>
@@ -7067,14 +7068,14 @@ Cg
         <image name="walkIcon.png" width="49" height="49"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="Cy1-NI-jxU"/>
-        <segue reference="uag-Py-r2A"/>
-        <segue reference="INe-TO-WLa"/>
-        <segue reference="pWo-kn-ofY"/>
-        <segue reference="7UZ-3y-AnI"/>
-        <segue reference="XYr-Iz-4gN"/>
         <segue reference="HjF-VL-CeM"/>
-        <segue reference="yU7-fs-v8G"/>
+        <segue reference="7UZ-3y-AnI"/>
+        <segue reference="pWo-kn-ofY"/>
+        <segue reference="INe-TO-WLa"/>
+        <segue reference="XYr-Iz-4gN"/>
+        <segue reference="Cy1-NI-jxU"/>
         <segue reference="CaS-R9-Oep"/>
+        <segue reference="yU7-fs-v8G"/>
+        <segue reference="uag-Py-r2A"/>
     </inferredMetricsTieBreakers>
 </document>

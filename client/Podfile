@@ -6,7 +6,7 @@ target 'tagginfun' do
   use_frameworks!
 
   # Pods for tagginfun
-  pod 'Socket.IO-Client-Swift', '~> 10.2.0' 
+  pod 'Socket.IO-Client-Swift', '~> 12.0.0’ 
   # pod 'IDZSwiftCommonCrypto', '~> 0.9.1'
 
 
