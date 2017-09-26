@@ -2370,7 +2370,7 @@ class GameViewController: UIViewController, MKMapViewDelegate {
         //timer, to indicate to ghost owner when it expires
         if self.ownGhostCount > 0 {
             self.ownGhostCount += 1
-            if self.ownGhostCount == JAMMER_DURATION {
+            if self.ownGhostCount >= JAMMER_DURATION {
                 self.ownGhostCount = 0
                 self.logEvent("Ghost expired")
                 self.removeActiveItemImageView(12)

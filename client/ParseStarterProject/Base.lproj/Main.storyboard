@@ -1289,8 +1289,7 @@ Cg
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dAs-BF-u2Z">
                                         <rect key="frame" x="89" y="51" width="158" height="195"/>
                                         <attributedString key="attributedText">
-                                            <fragment>
-                                                <string key="content">1) All players enter their name/nickname, and the same game name.  It doesn’t matter what the game name is, as long as it is the same for all players</string>
+                                            <fragment content="1) All players choose a team (offense or defense) and enter their name/nickname, ">
                                                 <attributes>
                                                     <color key="NSColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                     <font key="NSFont" size="13" name="ArialMT"/>
@@ -7071,11 +7070,11 @@ Cg
         <segue reference="Cy1-NI-jxU"/>
         <segue reference="uag-Py-r2A"/>
         <segue reference="INe-TO-WLa"/>
-        <segue reference="t4V-2k-Kfg"/>
-        <segue reference="7UZ-3y-AnI"/>
         <segue reference="pWo-kn-ofY"/>
+        <segue reference="7UZ-3y-AnI"/>
         <segue reference="XYr-Iz-4gN"/>
         <segue reference="HjF-VL-CeM"/>
+        <segue reference="yU7-fs-v8G"/>
         <segue reference="CaS-R9-Oep"/>
     </inferredMetricsTieBreakers>
 </document>
