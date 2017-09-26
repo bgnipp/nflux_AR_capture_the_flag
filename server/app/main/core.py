@@ -5,7 +5,6 @@ import time
 import threading
 
 games = {}
-log = open('nflux_log.txt', 'a+')
 
 def is_rejoining_game(udid):
 	for game_id in games:
