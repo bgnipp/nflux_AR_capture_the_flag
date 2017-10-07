@@ -47,7 +47,7 @@ def register_user(user_name, is_offense, udid, sid, latitude, longitude):
 		'start_time': -1,
 		'config': {},
 		'items_enabled': False,
-		'heartbeat': time.time(),
+		'heartbeat': int(time.time()),
 		'point_state': {
 			'capture_state': '',
 			'capturer': '',
@@ -62,7 +62,7 @@ def handle_message(user_name, is_offense, udid, latitude, longitude):
 	if rejoining_game_id:
 		join_room(rejoining_game_id)
 		current_timer_count = int(5 + games[rejoining_game_id]['config']['game_length'] \
-			- (time.time() - games[rejoining_game_id]['start_time']))
+			- (int(time.time()) - games[rejoining_game_id]['start_time']))
 		return 'rejoining', rejoining_game_id, games[rejoining_game_id]['config'], \
 			games[rejoining_game_id]['players_pos'], current_timer_count
 	game_id = register_user(user_name, is_offense, udid, request.sid, latitude, longitude)
@@ -76,11 +76,11 @@ def handle_message(game_id, udid):
 
 @socketio.on('postHeartbeat')
 def handle_message(game_id):
-	games[game_id]['heartbeat'] = time.time()
+	games[game_id]['heartbeat'] = int(time.time())
 
 @socketio.on('getWaitingUsers')
 def handle_message(game_id, just_joined=False):
-	games[game_id]['heartbeat'] = time.time()
+	games[game_id]['heartbeat'] = int(time.time())
 	if just_joined:
 		emit('updateWaitingUsers',
     		(
@@ -154,7 +154,7 @@ def handle_message(game_id, udid):
 					break
 			if all_joined == True:
 				games[game_id]['state'] = 3
-				games[game_id]['start_time'] = time.time() + 3
+				games[game_id]['start_time'] = int(time.time()) + 3
 			emit('updateGameDidStart',
 				(
 			    	games[game_id]['players_udid'],
@@ -252,7 +252,7 @@ def handle_message(game_id):
 
 @socketio.on('getDidGameStart')
 def handle_message(game_id):
-	games[game_id]['heartbeat'] = time.time()
+	games[game_id]['heartbeat'] = int(time.time())
 	emit('updateDidGameStart', games[game_id]['start_time'])
 
 @socketio.on('updateGameState')
@@ -268,7 +268,7 @@ def handle_message(
 	games[game_id]['players_pos'][position]['status'] = status
 	games[game_id]['players_pos'][position]['latitude'] = latitude
 	games[game_id]['players_pos'][position]['longitude'] = longitude
-	games[game_id]['heartbeat'] = time.time()
+	games[game_id]['heartbeat'] = int(time.time())
 	return games[game_id]['players_pos'], games[game_id]['point_state']
 
 @socketio.on('postGameEvent')
@@ -297,7 +297,7 @@ def handle_message(
 			return False
 		games[game_id]['point_state']['capture_state'] = 'capturing'
 		games[game_id]['point_state']['capturer'] = sender
-		games[game_id]['point_state']['heartbeat'] = time.time()
+		games[game_id]['point_state']['heartbeat'] = int(time.time())
 	elif event_name == 'stopCapturing' and games[game_id]['point_state']['capturer'] == sender:
 		games[game_id]['point_state']['capture_state'] = ''
 		games[game_id]['point_state']['capturer'] = ''
@@ -306,7 +306,7 @@ def handle_message(
 			return False
 		games[game_id]['point_state']['capture_state'] = 'captured'
 		games[game_id]['point_state']['capturer'] = sender
-		games[game_id]['point_state']['heartbeat'] = time.time()
+		games[game_id]['point_state']['heartbeat'] = int(time.time())
 	game_event = {
 		'sender': sender,
 		'eventName': event_name,
@@ -321,7 +321,7 @@ def handle_message(
 @socketio.on('postCaptureHeartbeat')
 def handle_message(game_id, position):
 	if games[game_id]['point_state']['capturer'] == position:
-		games[game_id]['point_state']['heartbeat'] = time.time()
+		games[game_id]['point_state']['heartbeat'] = int(time.time())
 
 def timedLoop():
 	print("timed loop fired, active GAMES: ")
@@ -330,13 +330,13 @@ def timedLoop():
 		print('  ' + game_id)
 		with open('nflux_log.txt', 'a+') as f:
 			f.write(str(game_id) + '\t' + str(games[game_id]) + '\n')
-		idle_time = time.time() - games[game_id]['heartbeat']
+		idle_time = int(time.time()) - games[game_id]['heartbeat']
 		if idle_time > 20:
 			print("Deleting inactive game ", game_id)
 			del_games.append(game_id)
 		# reset point cap state if capturer is inactive 
 		if games[game_id]['point_state']['capture_state'] != '':
-			capture_idle_time = time.time() - games[game_id]['point_state']['heartbeat']
+			capture_idle_time = int(time.time()) - games[game_id]['point_state']['heartbeat']
 			if capture_idle_time > 15:
 				print("Reseting point cap state for game: ", game_id)
 				games[game_id]['point_state']['capture_state'] = ''

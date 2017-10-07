@@ -160,6 +160,7 @@ class SocketIOManager: NSObject {
     
     func listenForGameStart(gameID: String, completionHandler: @escaping (_ gameStartTime: Int) -> Void) {
         socket.on("updateDidGameStart") { (dataArray, ack) -> Void in
+            print(dataArray)
             let gameStartTime = dataArray[0] as! Int
             completionHandler(gameStartTime)
         }
